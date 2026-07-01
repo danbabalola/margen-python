@@ -5,16 +5,30 @@ Developer-friendly & type-safe Python SDK specifically catered to leverage *marg
 [![Built by Speakeasy](https://img.shields.io/badge/Built_by-SPEAKEASY-374151?style=for-the-badge&labelColor=f3f4f6)](https://www.speakeasy.com/?utm_source=margen&utm_campaign=python)
 [![License: MIT](https://img.shields.io/badge/LICENSE_//_MIT-3b5bdb?style=for-the-badge&labelColor=eff6ff)](https://opensource.org/licenses/MIT)
 
-
-<br /><br />
-> [!IMPORTANT]
-> This SDK is not yet ready for production use. To complete setup please follow the steps outlined in your [workspace](https://app.speakeasy.com/org/margen/margen-api). Delete this section before > publishing to a package manager.
-
 <!-- Start Summary [summary] -->
 ## Summary
 
-Margen Attack-Data API: Credit-metered API that delivers labeled deepfake attack-data (real vs AI-generated face images and their platform-perturbed variants). Data is organized into benchmarks (versioned datasets, e.g. synthetic-face-v1), each with its own queryable dimensions. Reverse-engineered from the live b2b-website routes and the proven scripts/data-api/margen_client.py; this spec is the source of truth for the generated SDKs. Auth: Bearer token (or x-api-key). Pull one image per credit; test keys pull a free fixed sample. The canonical path prefix is /api/v1/data; the unversioned /api/data prefix remains a permanent alias.
+Margen Attack-Data API: Credit-metered API that delivers labeled deepfake attack-data (real vs AI-generated face images and their platform-perturbed variants). Data is organized into benchmarks (versioned datasets, e.g. synthetic-face-v1), each with its own queryable dimensions. Auth: Bearer token. Pull one image per credit; test keys pull a free fixed sample. The canonical path prefix is /api/v1/data; the unversioned /api/data prefix remains a permanent alias.
 <!-- End Summary [summary] -->
+
+## Notebook quickstart & bulk downloads
+
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/danbabalola/margen-python/blob/main/notebooks/quickstart.ipynb)
+
+Beyond the generated client, `margen.ergonomics` adds notebook-friendly helpers (paginated iteration + one-call bulk download):
+
+```python
+from margen import Margen
+from margen.ergonomics import iter_items, download_selection
+
+client = Margen(bearer_auth="mgn_test_...")   # your key from margensoftware.com/keys
+
+picks = list(iter_items(client, benchmark="synthetic-face-v1", kind="fake", skin_tone="dark"))
+download_selection(client, picks, "out/")     # signed-URL fetch, deterministic idempotency, stop-on-402
+```
+
+- `iter_items(client, **filters)` / `iter_lineages(client, **filters)` — yield the whole result set, paging under the hood.
+- `download_selection(client, items, out_dir)` — download a selection to a folder; previews cleanly in Colab. Run `notebooks/quickstart.ipynb`.
 
 <!-- Start Table of Contents [toc] -->
 ## Table of Contents

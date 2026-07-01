@@ -1,0 +1,5 @@
+# Hand-written files Speakeasy must NOT manage or overwrite on regeneration.
+src/margen/ergonomics.py
+notebooks/
+README.md
+CHANGELOG.md
