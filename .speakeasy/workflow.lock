@@ -1,0 +1,37 @@
+speakeasyVersion: 1.787.0
+sources:
+    Margen Attack-Data API:
+        sourceNamespace: margen-attack-data-api
+        sourceRevisionDigest: sha256:9817daab7eda597bcd3e81d731ba619f0ea137038b57713fc42fcfb19133a211
+        sourceBlobDigest: sha256:5eaae96d9e27834a5a35d1ba5a1ba775ad369ef3c19023779d49b09ebdbbad9b
+        tags:
+            - latest
+            - 1.0.0
+targets:
+    margen:
+        source: Margen Attack-Data API
+        sourceNamespace: margen-attack-data-api
+        sourceRevisionDigest: sha256:9817daab7eda597bcd3e81d731ba619f0ea137038b57713fc42fcfb19133a211
+        sourceBlobDigest: sha256:5eaae96d9e27834a5a35d1ba5a1ba775ad369ef3c19023779d49b09ebdbbad9b
+        codeSamplesNamespace: margen-attack-data-api-python-code-samples
+        codeSamplesRevisionDigest: sha256:275a2c4b32fba3fa54d6ad7a42e78e1ef838d7c1f7298cfd9c59874796ba1417
+workflow:
+    workflowVersion: 1.0.0
+    speakeasyVersion: latest
+    sources:
+        Margen Attack-Data API:
+            inputs:
+                - location: /Users/danielbabalola/projects/ai_video_detector/sdk/openapi.json
+            output: .speakeasy/out.openapi.yaml
+            registry:
+                location: registry.speakeasyapi.dev/margen/margen-api/margen-attack-data-api
+    targets:
+        margen:
+            target: python
+            source: Margen Attack-Data API
+            codeSamples:
+                registry:
+                    location: registry.speakeasyapi.dev/margen/margen-api/margen-attack-data-api-python-code-samples
+                labelOverride:
+                    fixedValue: Python (SDK)
+                blocking: false

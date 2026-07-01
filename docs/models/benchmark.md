@@ -1,0 +1,13 @@
+# Benchmark
+
+
+## Fields
+
+| Field                                                                   | Type                                                                    | Required                                                                | Description                                                             |
+| ----------------------------------------------------------------------- | ----------------------------------------------------------------------- | ----------------------------------------------------------------------- | ----------------------------------------------------------------------- |
+| `object`                                                                | *Literal["benchmark"]*                                                  | :heavy_check_mark:                                                      | N/A                                                                     |
+| `id`                                                                    | *str*                                                                   | :heavy_check_mark:                                                      | N/A                                                                     |
+| `product`                                                               | *str*                                                                   | :heavy_check_mark:                                                      | faces \| swaps \| puppets \| liveness                                   |
+| `title`                                                                 | *str*                                                                   | :heavy_check_mark:                                                      | N/A                                                                     |
+| `description`                                                           | *OptionalNullable[str]*                                                 | :heavy_minus_sign:                                                      | N/A                                                                     |
+| `dimensions`                                                            | List[*str*]                                                             | :heavy_minus_sign:                                                      | The queryable dimension keys for this benchmark (details via /catalog). |

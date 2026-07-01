@@ -1,0 +1,302 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Margen Attack-Data API",
+    "version": "1.0.0",
+    "description": "Credit-metered API that delivers labeled deepfake attack-data (real vs AI-generated face images and their platform-perturbed variants). Data is organized into benchmarks (versioned datasets, e.g. synthetic-face-v1), each with its own queryable dimensions. Reverse-engineered from the live b2b-website routes and the proven scripts/data-api/margen_client.py; this spec is the source of truth for the generated SDKs. Auth: Bearer token (or x-api-key). Pull one image per credit; test keys pull a free fixed sample. The canonical path prefix is /api/v1/data; the unversioned /api/data prefix remains a permanent alias."
+  },
+  "servers": [
+    { "url": "https://margensoftware.com", "description": "Production" },
+    { "url": "http://localhost:3000", "description": "Local dev" }
+  ],
+  "security": [{ "bearerAuth": [] }],
+  "paths": {
+    "/api/v1/data/benchmarks": {
+      "get": {
+        "operationId": "listBenchmarks",
+        "summary": "List benchmarks the key can query",
+        "description": "Returns the benchmarks visible to the key. Pick an id and pass it as the `benchmark` parameter on /catalog and /items.",
+        "responses": {
+          "200": {
+            "description": "A list of benchmarks.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/BenchmarkList" } } }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "429": { "$ref": "#/components/responses/RateLimited" }
+        }
+      }
+    },
+    "/api/v1/data/catalog": {
+      "get": {
+        "operationId": "getCatalog",
+        "summary": "Dimensions and allowed values for a benchmark",
+        "description": "Self-describing catalog for one benchmark: each dimension with its allowed values, plus a `filters` map of query-param to allowed values. This is the runtime source of truth for what a benchmark supports (the API is registry-driven; do not hardcode dimension values in a client).",
+        "parameters": [{ "$ref": "#/components/parameters/Benchmark" }],
+        "responses": {
+          "200": {
+            "description": "The benchmark catalog.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Catalog" } } }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "404": { "$ref": "#/components/responses/NotFound" },
+          "429": { "$ref": "#/components/responses/RateLimited" }
+        }
+      }
+    },
+    "/api/v1/data/items": {
+      "get": {
+        "operationId": "listItems",
+        "summary": "Select items for a benchmark",
+        "description": "Filterable list of items (ids + attributes, no storage paths). Any filter accepts a comma-separated list, which matches any of the values (OR within a dimension); separate params must all hold (AND across dimensions). Omit a dimension to include all of its values. Fixed dimensions validate and return 400 on an unknown value.\n\nDimension filters are benchmark-defined: the ones below cover synthetic-face-v1; call /catalog for a benchmark's actual dimensions and values. Additional per-benchmark dimensions are queried by their catalog `key`.\n\nPagination has three modes: (1) offset (default: `limit`/`offset`, exact `total`, `has_more`; no cursor), (2) cursor (`cursor` set: keyset, `total` null, `next_cursor` set), (3) lineage (`lineage=true`: pages whole lineages; `limit`/`offset` count lineages, `total_lineages`/`lineages` returned, no cursor).\n\nThe x-speakeasy-pagination extension on this operation describes cursor mode only: a generated SDK auto-pages by feeding `next_cursor` back into the `cursor` query param. Offset and lineage modes are paged manually.",
+        "x-speakeasy-pagination": {
+          "type": "cursor",
+          "inputs": [
+            { "name": "cursor", "in": "parameters", "type": "cursor" }
+          ],
+          "outputs": {
+            "nextCursor": "$.next_cursor"
+          }
+        },
+        "parameters": [
+          { "$ref": "#/components/parameters/Benchmark" },
+          { "name": "skin_tone", "in": "query", "required": false, "schema": { "type": "string" }, "description": "Demographic cell skin-tone band(s), comma-separated. Values per /catalog (e.g. very_light,light,intermediate,tan,brown,dark)." },
+          { "name": "gender", "in": "query", "required": false, "schema": { "type": "string" }, "description": "Demographic cell gender(s), comma-separated (e.g. female,male)." },
+          { "name": "kind", "in": "query", "required": false, "schema": { "type": "string", "enum": ["real", "fake"] }, "description": "real (genuine, unmodified) or fake (AI-generated). Comma-separated allowed." },
+          { "name": "generator", "in": "query", "required": false, "schema": { "type": "string" }, "description": "Generator model(s) (fake only). Values per /catalog." },
+          { "name": "perturbation", "in": "query", "required": false, "schema": { "type": "string" }, "description": "Condition(s) applied. Values per /catalog (e.g. clean,jpeg_q70,fb_pipeline). Alias: `condition`." },
+          { "name": "condition", "in": "query", "required": false, "schema": { "type": "string" }, "description": "Alias for `perturbation`." },
+          { "name": "layer", "in": "query", "required": false, "schema": { "type": "string" }, "description": "Perturbation layer(s) (clean, layer1, layer2, layer2_recropped)." },
+          { "name": "source_real_id", "in": "query", "required": false, "schema": { "type": "string" }, "description": "Pull the full lineage descended from one sourced real image." },
+          { "name": "limit", "in": "query", "required": false, "schema": { "type": "integer", "minimum": 1, "maximum": 500, "default": 100 }, "description": "Page size. Values above 500 are clamped; the response sets limit_clamped." },
+          { "name": "offset", "in": "query", "required": false, "schema": { "type": "integer", "minimum": 0, "default": 0 }, "description": "Pagination offset (offset/lineage modes)." },
+          { "name": "cursor", "in": "query", "required": false, "schema": { "type": "string" }, "description": "Keyset cursor from a prior response's next_cursor (cursor mode)." },
+          { "name": "lineage", "in": "query", "required": false, "schema": { "type": "string", "enum": ["true"] }, "description": "Set to true to page over whole lineages." }
+        ],
+        "responses": {
+          "200": {
+            "description": "A page of items.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ItemList" } } }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "404": { "$ref": "#/components/responses/NotFound" },
+          "429": { "$ref": "#/components/responses/RateLimited" }
+        }
+      }
+    },
+    "/api/v1/data/download/{itemId}": {
+      "get": {
+        "operationId": "downloadItem",
+        "summary": "Get a signed URL for one item",
+        "description": "Returns JSON with a short-lived signed URL (not the image bytes). Fetch `url` with a plain HTTP client and NO auth header, within `expires_in` seconds. On the live tier this debits one credit before returning the URL; test items are free. Send an Idempotency-Key header so a retry of the same item is a no-op (not a second charge). On a zero balance returns 402 with code insufficient_credits.",
+        "parameters": [
+          { "name": "itemId", "in": "path", "required": true, "schema": { "type": "string" }, "description": "The item id from /items." },
+          { "name": "Idempotency-Key", "in": "header", "required": false, "schema": { "type": "string" }, "description": "Stable per item across retries so a retried download is not charged twice." }
+        ],
+        "responses": {
+          "200": {
+            "description": "A signed download.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Download" } } }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "402": { "$ref": "#/components/responses/InsufficientCredits" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "404": { "$ref": "#/components/responses/NotFound" },
+          "429": { "$ref": "#/components/responses/RateLimited" }
+        }
+      }
+    },
+    "/api/v1/data/usage": {
+      "get": {
+        "operationId": "getUsage",
+        "summary": "Current tier and credit balance",
+        "description": "The key owner's tier and credit balance. Check before a large pull to avoid a mid-run 402.",
+        "responses": {
+          "200": {
+            "description": "Usage.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Usage" } } }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "429": { "$ref": "#/components/responses/RateLimited" }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": { "type": "http", "scheme": "bearer", "description": "Authorization: Bearer <key>. Keys look like mgn_live_... (live) or mgn_test_... (free sample)." },
+      "apiKeyHeader": { "type": "apiKey", "in": "header", "name": "x-api-key", "description": "Alternative to the bearer header; same key." }
+    },
+    "parameters": {
+      "Benchmark": {
+        "name": "benchmark",
+        "in": "query",
+        "required": false,
+        "schema": { "type": "string" },
+        "description": "Benchmark id (e.g. synthetic-face-v1). Effectively required: omitting it works only while the key sees exactly one benchmark; once a second exists, omission returns 400 listing the available ids."
+      }
+    },
+    "schemas": {
+      "AttackDataItem": {
+        "type": "object",
+        "required": ["object", "id", "benchmark", "kind"],
+        "properties": {
+          "object": { "type": "string", "const": "attack_data_item" },
+          "id": { "type": "string", "description": "Pass to /api/v1/data/download/{itemId}." },
+          "benchmark": { "type": "string" },
+          "kind": { "type": "string", "enum": ["real", "fake"] },
+          "skin_tone": { "type": ["string", "null"] },
+          "gender": { "type": ["string", "null"] },
+          "generator": { "type": ["string", "null"], "description": "Generator model (fake only)." },
+          "perturbation": { "type": ["string", "null"] },
+          "layer": { "type": ["string", "null"] },
+          "source_real_id": { "type": ["string", "null"], "description": "Lineage key; all variants of one source share it." },
+          "source_dataset": { "type": ["string", "null"], "description": "Provenance / license source (e.g. pexels)." },
+          "attributes": { "type": "object", "additionalProperties": true, "description": "Benchmark-specific fields; {} when the benchmark has none." }
+        }
+      },
+      "Benchmark": {
+        "type": "object",
+        "required": ["object", "id", "product", "title"],
+        "properties": {
+          "object": { "type": "string", "const": "benchmark" },
+          "id": { "type": "string" },
+          "product": { "type": "string", "description": "faces | swaps | puppets | liveness" },
+          "title": { "type": "string" },
+          "description": { "type": ["string", "null"] },
+          "dimensions": { "type": "array", "items": { "type": "string" }, "description": "The queryable dimension keys for this benchmark (details via /catalog)." }
+        }
+      },
+      "BenchmarkList": {
+        "type": "object",
+        "required": ["object", "data"],
+        "properties": {
+          "object": { "type": "string", "const": "list" },
+          "tier": { "type": "string", "enum": ["test", "live"] },
+          "data": { "type": "array", "items": { "$ref": "#/components/schemas/Benchmark" } }
+        }
+      },
+      "ItemList": {
+        "type": "object",
+        "required": ["object", "data", "has_more"],
+        "description": "Standard list envelope plus /items echo fields. total is null in cursor and lineage modes.",
+        "properties": {
+          "object": { "type": "string", "const": "list" },
+          "data": { "type": "array", "items": { "$ref": "#/components/schemas/AttackDataItem" } },
+          "total": { "type": ["integer", "null"], "description": "Exact count in offset mode; null in cursor/lineage modes." },
+          "has_more": { "type": "boolean" },
+          "next_cursor": { "type": ["string", "null"], "description": "Set in cursor mode only." },
+          "benchmark": { "type": "string" },
+          "mode": { "type": "string", "enum": ["offset", "cursor", "lineage"] },
+          "applied_filters": { "type": "object", "additionalProperties": { "type": ["array", "null"], "items": { "type": "string" } }, "description": "Echo of the filters the query understood; null means the dimension was not filtered." },
+          "limit": { "type": "integer" },
+          "offset": { "type": "integer" },
+          "limit_clamped": { "type": "boolean", "description": "True when the requested limit exceeded the max and was clamped." },
+          "total_lineages": { "type": "integer", "description": "Lineage mode only." },
+          "lineages": { "type": "integer", "description": "Lineage mode only: lineages on this page." }
+        }
+      },
+      "DimensionValue": {
+        "type": "object",
+        "properties": {
+          "value": { "type": "string" },
+          "label": { "type": "string" }
+        }
+      },
+      "CatalogDimension": {
+        "type": "object",
+        "required": ["key", "label", "source"],
+        "properties": {
+          "key": { "type": "string", "description": "The query-param name." },
+          "label": { "type": "string" },
+          "source": { "type": "string", "enum": ["column", "attribute"] },
+          "alias": { "type": "string" },
+          "values": { "type": "array", "items": { "$ref": "#/components/schemas/DimensionValue" }, "description": "Allowed values (labeled). Absent for lineage keys." },
+          "lineage": { "type": "boolean" },
+          "note": { "type": "string" }
+        }
+      },
+      "Catalog": {
+        "type": "object",
+        "required": ["object", "benchmark", "tier", "dimensions", "filters"],
+        "properties": {
+          "object": { "type": "string", "const": "catalog" },
+          "benchmark": { "$ref": "#/components/schemas/Benchmark" },
+          "tier": { "type": "string", "enum": ["test", "live"] },
+          "total": { "type": "integer" },
+          "dimensions": { "type": "array", "items": { "$ref": "#/components/schemas/CatalogDimension" } },
+          "filters": { "type": "object", "additionalProperties": true, "description": "Map of query-param to allowed values (self-describing)." }
+        }
+      },
+      "Usage": {
+        "type": "object",
+        "required": ["object", "tier", "balance"],
+        "properties": {
+          "object": { "type": "string", "const": "usage" },
+          "owner": { "type": "string" },
+          "tier": { "type": "string", "enum": ["test", "live"] },
+          "balance": { "type": "integer", "description": "Credit balance (images purchasable)." }
+        }
+      },
+      "Download": {
+        "type": "object",
+        "required": ["object", "url", "expires_in", "item"],
+        "properties": {
+          "object": { "type": "string", "const": "download" },
+          "url": { "type": "string", "format": "uri", "description": "Short-lived signed URL for one image (JPEG). Fetch with no auth header." },
+          "expires_in": { "type": "integer", "description": "Seconds until the signed URL expires (300)." },
+          "item": { "$ref": "#/components/schemas/AttackDataItem" },
+          "balance": { "type": ["integer", "null"], "description": "Credit balance after the debit; null for free test items." }
+        }
+      },
+      "Error": {
+        "type": "object",
+        "required": ["error", "code"],
+        "properties": {
+          "error": { "type": "string", "description": "Human-readable message." },
+          "code": {
+            "type": "string",
+            "description": "Stable machine-readable error code. Branch on this, not on the message text.",
+            "enum": [
+              "unauthorized",
+              "insufficient_credits",
+              "forbidden_tier",
+              "not_found",
+              "unknown_benchmark",
+              "ambiguous_benchmark",
+              "invalid_param",
+              "invalid_cursor",
+              "rate_limited",
+              "service_unconfigured",
+              "server_error"
+            ]
+          },
+          "param": { "type": "string", "description": "The offending query param (invalid_param on an unknown fixed-dimension value)." },
+          "allowed": { "type": "array", "items": { "type": "string" }, "description": "Allowed values for the offending param (invalid_param)." },
+          "available": {
+            "type": "array",
+            "description": "Available benchmarks (unknown_benchmark / ambiguous_benchmark).",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": { "type": "string" },
+                "title": { "type": "string" },
+                "product": { "type": "string" }
+              }
+            }
+          },
+          "required": { "type": "integer", "description": "Credits required (insufficient_credits)." }
+        }
+      }
+    },
+    "responses": {
+      "BadRequest": { "description": "Invalid request: unknown value for a fixed dimension (param + allowed), invalid cursor, or ambiguous benchmark (available listed).", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } },
+      "Unauthorized": { "description": "Missing, invalid, or revoked API key.", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } },
+      "InsufficientCredits": { "description": "Insufficient credits (live tier), code insufficient_credits. Top up in the portal.", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } },
+      "Forbidden": { "description": "Key not permitted for this item (e.g. a test key requesting a live-tier item), code forbidden_tier.", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } },
+      "NotFound": { "description": "Item or benchmark not found (or not visible to this key).", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } },
+      "RateLimited": { "description": "Per-key rate limit exceeded. No Retry-After header is sent; back off with exponential jitter.", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } }
+    }
+  }
+}
