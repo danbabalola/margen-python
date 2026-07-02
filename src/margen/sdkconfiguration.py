@@ -16,7 +16,7 @@ from typing import Callable, Dict, Optional, Tuple, Union
 
 
 SERVERS = [
-    "https://margensoftware.com",
+    "https://www.margensoftware.com",
     # Production
     "http://localhost:3000",
     # Local dev
