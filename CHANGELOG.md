@@ -4,6 +4,12 @@ All notable changes to the `margen` Python SDK. Versioning follows SemVer; the
 SDK version is decoupled from the API version. See the API's own versioning
 policy for the wire contract.
 
+## [0.1.5]
+
+### Added
+- `list_items` gains two `synthetic-face-v1` filters: `scene` (indoor | outdoor | selfie; synthetic-only, reals have none) and `variant_group` (opaque generation-cluster id; filter by one value to pull near-duplicate synthetic siblings, or dedup to one per group).
+- `AttackDataItem.scene` and `AttackDataItem.variant_group` fields (both null for reals). `variant_group` is navigation/lineage only; it exposes no generation recipe and is not a billing bundle.
+
 ## [0.1.4]
 
 ### Added

@@ -45,6 +45,10 @@ class ListItemsRequestTypedDict(TypedDict):
     r"""Pull every perturbation of one base image. Take an item's base_id and add &perturbation=... to fetch a specific condition of the same image."""
     source_real_id: NotRequired[str]
     r"""Pull the full lineage descended from one sourced real image."""
+    scene: NotRequired[str]
+    r"""Synthetic-only semantic context: indoor | outdoor | selfie. Comma-separated allowed. Real images have no scene (null), so filtering by scene restricts to synthetics; scene together with kind=real is empty by construction."""
+    variant_group: NotRequired[str]
+    r"""Opaque generation-cluster id. Filter by one value to pull every near-duplicate synthetic sibling of that cluster, or dedup to one per group. Reals are null. Grouping/lineage only; it exposes no generation recipe and is not a billing bundle."""
     include: NotRequired[str]
     r"""Opt-in extras, comma-separated. Pass `metadata` to attach the full per-image label object (skin tone, gender, age, scene, occlusion, difficulty, image spec, and confidences) to each item under `metadata`. Browsing labels is free (no bytes, no credit); only /download costs a credit. Fields are listed by /catalog."""
     limit: NotRequired[int]
@@ -120,6 +124,18 @@ class ListItemsRequest(BaseModel):
     ] = None
     r"""Pull the full lineage descended from one sourced real image."""
 
+    scene: Annotated[
+        Optional[str],
+        FieldMetadata(query=QueryParamMetadata(style="form", explode=True)),
+    ] = None
+    r"""Synthetic-only semantic context: indoor | outdoor | selfie. Comma-separated allowed. Real images have no scene (null), so filtering by scene restricts to synthetics; scene together with kind=real is empty by construction."""
+
+    variant_group: Annotated[
+        Optional[str],
+        FieldMetadata(query=QueryParamMetadata(style="form", explode=True)),
+    ] = None
+    r"""Opaque generation-cluster id. Filter by one value to pull every near-duplicate synthetic sibling of that cluster, or dedup to one per group. Reals are null. Grouping/lineage only; it exposes no generation recipe and is not a billing bundle."""
+
     include: Annotated[
         Optional[str],
         FieldMetadata(query=QueryParamMetadata(style="form", explode=True)),
@@ -170,6 +186,8 @@ class ListItemsRequest(BaseModel):
                 "layer",
                 "base_id",
                 "source_real_id",
+                "scene",
+                "variant_group",
                 "include",
                 "limit",
                 "offset",
