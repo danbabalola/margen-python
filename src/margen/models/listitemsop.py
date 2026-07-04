@@ -20,6 +20,10 @@ Lineage = Literal["true",]
 r"""Set to true to page over whole lineages."""
 
 
+ExcludeOwned = Literal["true",]
+r"""Offset mode only. Omit items you already own (credits are used per unique image, so owned items are free re-downloads). The response adds remaining/owned/total_matching and subset_exhausted with a message when you own the whole matching subset."""
+
+
 class ListItemsRequestTypedDict(TypedDict):
     benchmark: NotRequired[str]
     r"""Benchmark id (e.g. synthetic-face-v1). Effectively required: omitting it works only while the key sees exactly one benchmark; once a second exists, omission returns 400 listing the available ids."""
@@ -37,8 +41,12 @@ class ListItemsRequestTypedDict(TypedDict):
     r"""Alias for `perturbation`."""
     layer: NotRequired[str]
     r"""Perturbation layer(s) (clean, layer1, layer2, layer2_recropped)."""
+    base_id: NotRequired[str]
+    r"""Pull every perturbation of one base image. Take an item's base_id and add &perturbation=... to fetch a specific condition of the same image."""
     source_real_id: NotRequired[str]
     r"""Pull the full lineage descended from one sourced real image."""
+    include: NotRequired[str]
+    r"""Opt-in extras, comma-separated. Pass `metadata` to attach the full per-image label object (skin tone, gender, age, scene, occlusion, difficulty, image spec, and confidences) to each item under `metadata`. Browsing labels is free (no bytes, no credit); only /download costs a credit. Fields are listed by /catalog."""
     limit: NotRequired[int]
     r"""Page size. Values above 500 are clamped; the response sets limit_clamped."""
     offset: NotRequired[int]
@@ -47,6 +55,8 @@ class ListItemsRequestTypedDict(TypedDict):
     r"""Keyset cursor from a prior response's next_cursor (cursor mode)."""
     lineage: NotRequired[Lineage]
     r"""Set to true to page over whole lineages."""
+    exclude_owned: NotRequired[ExcludeOwned]
+    r"""Offset mode only. Omit items you already own (credits are used per unique image, so owned items are free re-downloads). The response adds remaining/owned/total_matching and subset_exhausted with a message when you own the whole matching subset."""
 
 
 class ListItemsRequest(BaseModel):
@@ -98,11 +108,23 @@ class ListItemsRequest(BaseModel):
     ] = None
     r"""Perturbation layer(s) (clean, layer1, layer2, layer2_recropped)."""
 
+    base_id: Annotated[
+        Optional[str],
+        FieldMetadata(query=QueryParamMetadata(style="form", explode=True)),
+    ] = None
+    r"""Pull every perturbation of one base image. Take an item's base_id and add &perturbation=... to fetch a specific condition of the same image."""
+
     source_real_id: Annotated[
         Optional[str],
         FieldMetadata(query=QueryParamMetadata(style="form", explode=True)),
     ] = None
     r"""Pull the full lineage descended from one sourced real image."""
+
+    include: Annotated[
+        Optional[str],
+        FieldMetadata(query=QueryParamMetadata(style="form", explode=True)),
+    ] = None
+    r"""Opt-in extras, comma-separated. Pass `metadata` to attach the full per-image label object (skin tone, gender, age, scene, occlusion, difficulty, image spec, and confidences) to each item under `metadata`. Browsing labels is free (no bytes, no credit); only /download costs a credit. Fields are listed by /catalog."""
 
     limit: Annotated[
         Optional[int],
@@ -128,6 +150,12 @@ class ListItemsRequest(BaseModel):
     ] = None
     r"""Set to true to page over whole lineages."""
 
+    exclude_owned: Annotated[
+        Optional[ExcludeOwned],
+        FieldMetadata(query=QueryParamMetadata(style="form", explode=True)),
+    ] = None
+    r"""Offset mode only. Omit items you already own (credits are used per unique image, so owned items are free re-downloads). The response adds remaining/owned/total_matching and subset_exhausted with a message when you own the whole matching subset."""
+
     @model_serializer(mode="wrap")
     def serialize_model(self, handler):
         optional_fields = set(
@@ -140,11 +168,14 @@ class ListItemsRequest(BaseModel):
                 "perturbation",
                 "condition",
                 "layer",
+                "base_id",
                 "source_real_id",
+                "include",
                 "limit",
                 "offset",
                 "cursor",
                 "lineage",
+                "exclude_owned",
             ]
         )
         serialized = handler(self)

@@ -17,7 +17,7 @@ import weakref
 
 
 class Margen(BaseSDK):
-    r"""Margen Attack-Data API: Credit-metered API that delivers labeled deepfake attack-data (real vs AI-generated face images and their platform-perturbed variants). Data is organized into benchmarks (versioned datasets, e.g. synthetic-face-v1), each with its own queryable dimensions. Reverse-engineered from the live b2b-website routes and the proven scripts/data-api/margen_client.py; this spec is the source of truth for the generated SDKs. Auth: Bearer token (or x-api-key). Pull one image per credit; test keys pull a free fixed sample. The canonical path prefix is /api/v1/data; the unversioned /api/data prefix remains a permanent alias."""
+    r"""Margen Attack-Data API: Credit-metered API that delivers labeled deepfake attack-data (real vs AI-generated face images and their platform-perturbed variants). Data is organized into benchmarks (versioned datasets, e.g. synthetic-face-v1), each with its own queryable dimensions. Auth: Bearer token. Pull one image per credit; test keys pull a free fixed sample. The canonical path prefix is /api/v1/data; the unversioned /api/data prefix remains a permanent alias."""
 
     def __init__(
         self,
@@ -509,11 +509,14 @@ class Margen(BaseSDK):
         perturbation: Optional[str] = None,
         condition: Optional[str] = None,
         layer: Optional[str] = None,
+        base_id: Optional[str] = None,
         source_real_id: Optional[str] = None,
+        include: Optional[str] = None,
         limit: Optional[int] = 100,
         offset: Optional[int] = 0,
         cursor: Optional[str] = None,
         lineage: Optional[models.Lineage] = None,
+        exclude_owned: Optional[models.ExcludeOwned] = None,
         retries: OptionalNullable[utils.RetryConfig] = UNSET,
         server_url: Optional[str] = None,
         timeout_ms: Optional[int] = None,
@@ -537,11 +540,14 @@ class Margen(BaseSDK):
         :param perturbation: Condition(s) applied. Values per /catalog (e.g. clean,jpeg_q70,fb_pipeline). Alias: `condition`.
         :param condition: Alias for `perturbation`.
         :param layer: Perturbation layer(s) (clean, layer1, layer2, layer2_recropped).
+        :param base_id: Pull every perturbation of one base image. Take an item's base_id and add &perturbation=... to fetch a specific condition of the same image.
         :param source_real_id: Pull the full lineage descended from one sourced real image.
+        :param include: Opt-in extras, comma-separated. Pass `metadata` to attach the full per-image label object (skin tone, gender, age, scene, occlusion, difficulty, image spec, and confidences) to each item under `metadata`. Browsing labels is free (no bytes, no credit); only /download costs a credit. Fields are listed by /catalog.
         :param limit: Page size. Values above 500 are clamped; the response sets limit_clamped.
         :param offset: Pagination offset (offset/lineage modes).
         :param cursor: Keyset cursor from a prior response's next_cursor (cursor mode).
         :param lineage: Set to true to page over whole lineages.
+        :param exclude_owned: Offset mode only. Omit items you already own (credits are used per unique image, so owned items are free re-downloads). The response adds remaining/owned/total_matching and subset_exhausted with a message when you own the whole matching subset.
         :param retries: Override the default retry configuration for this method
         :param server_url: Override the default server URL for this method
         :param timeout_ms: Override the default request timeout configuration for this method in milliseconds
@@ -566,11 +572,14 @@ class Margen(BaseSDK):
             perturbation=perturbation,
             condition=condition,
             layer=layer,
+            base_id=base_id,
             source_real_id=source_real_id,
+            include=include,
             limit=limit,
             offset=offset,
             cursor=cursor,
             lineage=lineage,
+            exclude_owned=exclude_owned,
         )
 
         req = self._build_request(
@@ -636,11 +645,14 @@ class Margen(BaseSDK):
                 perturbation=perturbation,
                 condition=condition,
                 layer=layer,
+                base_id=base_id,
                 source_real_id=source_real_id,
+                include=include,
                 limit=limit,
                 offset=offset,
                 cursor=next_cursor,
                 lineage=lineage,
+                exclude_owned=exclude_owned,
                 retries=retries,
                 server_url=server_url,
                 timeout_ms=timeout_ms,
@@ -682,11 +694,14 @@ class Margen(BaseSDK):
         perturbation: Optional[str] = None,
         condition: Optional[str] = None,
         layer: Optional[str] = None,
+        base_id: Optional[str] = None,
         source_real_id: Optional[str] = None,
+        include: Optional[str] = None,
         limit: Optional[int] = 100,
         offset: Optional[int] = 0,
         cursor: Optional[str] = None,
         lineage: Optional[models.Lineage] = None,
+        exclude_owned: Optional[models.ExcludeOwned] = None,
         retries: OptionalNullable[utils.RetryConfig] = UNSET,
         server_url: Optional[str] = None,
         timeout_ms: Optional[int] = None,
@@ -710,11 +725,14 @@ class Margen(BaseSDK):
         :param perturbation: Condition(s) applied. Values per /catalog (e.g. clean,jpeg_q70,fb_pipeline). Alias: `condition`.
         :param condition: Alias for `perturbation`.
         :param layer: Perturbation layer(s) (clean, layer1, layer2, layer2_recropped).
+        :param base_id: Pull every perturbation of one base image. Take an item's base_id and add &perturbation=... to fetch a specific condition of the same image.
         :param source_real_id: Pull the full lineage descended from one sourced real image.
+        :param include: Opt-in extras, comma-separated. Pass `metadata` to attach the full per-image label object (skin tone, gender, age, scene, occlusion, difficulty, image spec, and confidences) to each item under `metadata`. Browsing labels is free (no bytes, no credit); only /download costs a credit. Fields are listed by /catalog.
         :param limit: Page size. Values above 500 are clamped; the response sets limit_clamped.
         :param offset: Pagination offset (offset/lineage modes).
         :param cursor: Keyset cursor from a prior response's next_cursor (cursor mode).
         :param lineage: Set to true to page over whole lineages.
+        :param exclude_owned: Offset mode only. Omit items you already own (credits are used per unique image, so owned items are free re-downloads). The response adds remaining/owned/total_matching and subset_exhausted with a message when you own the whole matching subset.
         :param retries: Override the default retry configuration for this method
         :param server_url: Override the default server URL for this method
         :param timeout_ms: Override the default request timeout configuration for this method in milliseconds
@@ -739,11 +757,14 @@ class Margen(BaseSDK):
             perturbation=perturbation,
             condition=condition,
             layer=layer,
+            base_id=base_id,
             source_real_id=source_real_id,
+            include=include,
             limit=limit,
             offset=offset,
             cursor=cursor,
             lineage=lineage,
+            exclude_owned=exclude_owned,
         )
 
         req = self._build_request_async(
@@ -812,11 +833,14 @@ class Margen(BaseSDK):
                 perturbation=perturbation,
                 condition=condition,
                 layer=layer,
+                base_id=base_id,
                 source_real_id=source_real_id,
+                include=include,
                 limit=limit,
                 offset=offset,
                 cursor=next_cursor,
                 lineage=lineage,
+                exclude_owned=exclude_owned,
                 retries=retries,
                 server_url=server_url,
                 timeout_ms=timeout_ms,

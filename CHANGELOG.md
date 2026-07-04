@@ -4,6 +4,17 @@ All notable changes to the `margen` Python SDK. Versioning follows SemVer; the
 SDK version is decoupled from the API version. See the API's own versioning
 policy for the wire contract.
 
+## [0.1.4]
+
+### Added
+- `list_items` (and `download_item`) now expose `include` (opt-in extras, comma-separated). Pass `include="metadata"` to attach the full per-image label object under each item's `metadata`. Browsing labels is free; only `/download` costs a credit.
+- `AttackDataItem.metadata` — the full flat label object, present only when the request passes `include=metadata`.
+- `AttackDataItem.base_id` — the base image a variant derives from; hold it and change `perturbation` to pull another condition of the same image. Also a filter on `list_items`.
+- `exclude_owned` on `list_items` (offset mode): omit images you already own, with `remaining`/`owned`/`total_matching` and a `subset_exhausted` message.
+
+### Changed
+- Regenerated the typed client from the current API spec, which the SDK's vendored spec had drifted behind. `source_dataset` is no longer on the wire.
+
 ## [0.1.3]
 
 ### Changed

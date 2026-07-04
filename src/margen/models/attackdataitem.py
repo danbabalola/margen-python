@@ -28,7 +28,7 @@ Kind = Union[
 
 class AttackDataItemTypedDict(TypedDict):
     id: str
-    r"""Pass to /api/v1/data/download/{itemId}."""
+    r"""This exact image (a variant). Pass to /api/v1/data/download/{itemId}."""
     benchmark: str
     kind: Kind
     object: Literal["attack_data_item"]
@@ -38,17 +38,19 @@ class AttackDataItemTypedDict(TypedDict):
     r"""Generator model (fake only)."""
     perturbation: NotRequired[Nullable[str]]
     layer: NotRequired[Nullable[str]]
+    base_id: NotRequired[Nullable[str]]
+    r"""The base image this variant derives from. Hold base_id and change perturbation to pull another condition of the SAME image; all perturbations of one image share it."""
     source_real_id: NotRequired[Nullable[str]]
-    r"""Lineage key; all variants of one source share it."""
-    source_dataset: NotRequired[Nullable[str]]
-    r"""Provenance / license source (e.g. pexels)."""
+    r"""Lineage key; the real source this descends from. All variants of one source (the real, its fakes, and their perturbations) share it."""
     attributes: NotRequired[Dict[str, Any]]
     r"""Benchmark-specific fields; {} when the benchmark has none."""
+    metadata: NotRequired[Nullable[Dict[str, Any]]]
+    r"""The full per-image label object (skin tone incl. ITA, gender + cross-checks, age/race, scene/face/occlusion + confidences, difficulty, image spec). Present ONLY when the request passes include=metadata (on /items or /download); omitted otherwise. Flat and stable, so a streamed result builds a consistent table. Field schema is published by /catalog. Browsing labels is free; only /download costs a credit."""
 
 
 class AttackDataItem(BaseModel):
     id: str
-    r"""Pass to /api/v1/data/download/{itemId}."""
+    r"""This exact image (a variant). Pass to /api/v1/data/download/{itemId}."""
 
     benchmark: str
 
@@ -73,14 +75,17 @@ class AttackDataItem(BaseModel):
 
     layer: OptionalNullable[str] = UNSET
 
-    source_real_id: OptionalNullable[str] = UNSET
-    r"""Lineage key; all variants of one source share it."""
+    base_id: OptionalNullable[str] = UNSET
+    r"""The base image this variant derives from. Hold base_id and change perturbation to pull another condition of the SAME image; all perturbations of one image share it."""
 
-    source_dataset: OptionalNullable[str] = UNSET
-    r"""Provenance / license source (e.g. pexels)."""
+    source_real_id: OptionalNullable[str] = UNSET
+    r"""Lineage key; the real source this descends from. All variants of one source (the real, its fakes, and their perturbations) share it."""
 
     attributes: Optional[Dict[str, Any]] = None
     r"""Benchmark-specific fields; {} when the benchmark has none."""
+
+    metadata: OptionalNullable[Dict[str, Any]] = UNSET
+    r"""The full per-image label object (skin tone incl. ITA, gender + cross-checks, age/race, scene/face/occlusion + confidences, difficulty, image spec). Present ONLY when the request passes include=metadata (on /items or /download); omitted otherwise. Flat and stable, so a streamed result builds a consistent table. Field schema is published by /catalog. Browsing labels is free; only /download costs a credit."""
 
     @model_serializer(mode="wrap")
     def serialize_model(self, handler):
@@ -91,9 +96,10 @@ class AttackDataItem(BaseModel):
                 "generator",
                 "perturbation",
                 "layer",
+                "base_id",
                 "source_real_id",
-                "source_dataset",
                 "attributes",
+                "metadata",
             ]
         )
         nullable_fields = set(
@@ -103,8 +109,9 @@ class AttackDataItem(BaseModel):
                 "generator",
                 "perturbation",
                 "layer",
+                "base_id",
                 "source_real_id",
-                "source_dataset",
+                "metadata",
             ]
         )
         serialized = handler(self)

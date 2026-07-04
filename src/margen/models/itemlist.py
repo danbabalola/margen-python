@@ -50,6 +50,18 @@ class ItemListTypedDict(TypedDict):
     r"""Lineage mode only."""
     lineages: NotRequired[int]
     r"""Lineage mode only: lineages on this page."""
+    exclude_owned: NotRequired[bool]
+    r"""Present when exclude_owned=true was applied."""
+    remaining: NotRequired[int]
+    r"""exclude_owned only: items matching the filter you do NOT yet own (also mirrored in total)."""
+    owned: NotRequired[int]
+    r"""exclude_owned only: items matching the filter you already own."""
+    total_matching: NotRequired[int]
+    r"""exclude_owned only: all items matching the filter, owned or not."""
+    subset_exhausted: NotRequired[bool]
+    r"""exclude_owned only: true when you own every item matching the filter (remaining is 0 but total_matching is not)."""
+    message: NotRequired[str]
+    r"""Human-readable note, e.g. when the subset is exhausted."""
 
 
 class ItemList(BaseModel):
@@ -90,6 +102,24 @@ class ItemList(BaseModel):
     lineages: Optional[int] = None
     r"""Lineage mode only: lineages on this page."""
 
+    exclude_owned: Optional[bool] = None
+    r"""Present when exclude_owned=true was applied."""
+
+    remaining: Optional[int] = None
+    r"""exclude_owned only: items matching the filter you do NOT yet own (also mirrored in total)."""
+
+    owned: Optional[int] = None
+    r"""exclude_owned only: items matching the filter you already own."""
+
+    total_matching: Optional[int] = None
+    r"""exclude_owned only: all items matching the filter, owned or not."""
+
+    subset_exhausted: Optional[bool] = None
+    r"""exclude_owned only: true when you own every item matching the filter (remaining is 0 but total_matching is not)."""
+
+    message: Optional[str] = None
+    r"""Human-readable note, e.g. when the subset is exhausted."""
+
     @model_serializer(mode="wrap")
     def serialize_model(self, handler):
         optional_fields = set(
@@ -104,6 +134,12 @@ class ItemList(BaseModel):
                 "limit_clamped",
                 "total_lineages",
                 "lineages",
+                "exclude_owned",
+                "remaining",
+                "owned",
+                "total_matching",
+                "subset_exhausted",
+                "message",
             ]
         )
         nullable_fields = set(["total", "next_cursor"])

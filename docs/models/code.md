@@ -19,11 +19,11 @@ This is an open enum. Unrecognized values will not fail type checks.
 - `"unauthorized"`
 - `"insufficient_credits"`
 - `"forbidden_tier"`
+- `"forbidden_scope"`
 - `"not_found"`
 - `"unknown_benchmark"`
 - `"ambiguous_benchmark"`
 - `"invalid_param"`
 - `"invalid_cursor"`
 - `"rate_limited"`
-- `"service_unconfigured"`
 - `"server_error"`

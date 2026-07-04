@@ -60,8 +60,7 @@ def iter_items(client: Margen, *, page_size: int = 500, **filters) -> Iterator[m
         resp = client.list_items(limit=page_size, offset=offset, **filters)
         page = resp.result if resp is not None else None
         data = (page.data if page is not None else None) or []
-        for item in data:
-            yield item
+        yield from data
         if not data or page is None or not page.has_more:
             break
         offset += len(data)
@@ -80,8 +79,7 @@ def iter_lineages(client: Margen, *, page_size: int = 100, **filters) -> Iterato
         resp = client.list_items(lineage="true", limit=page_size, offset=offset, **filters)
         page = resp.result if resp is not None else None
         data = (page.data if page is not None else None) or []
-        for item in data:
-            yield item
+        yield from data
         if not data or page is None or not page.has_more:
             break
         # Lineage mode pages by lineage: advance by the distinct lineages returned.

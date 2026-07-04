@@ -17,6 +17,7 @@ if TYPE_CHECKING:
     from .getcatalogop import GetCatalogRequest, GetCatalogRequestTypedDict
     from .itemlist import ItemList, ItemListTypedDict, Mode
     from .listitemsop import (
+        ExcludeOwned,
         Lineage,
         ListItemsKind,
         ListItemsRequest,
@@ -49,6 +50,7 @@ __all__ = [
     "DownloadItemRequest",
     "DownloadItemRequestTypedDict",
     "DownloadTypedDict",
+    "ExcludeOwned",
     "GetCatalogRequest",
     "GetCatalogRequestTypedDict",
     "ItemList",
@@ -98,6 +100,7 @@ _dynamic_imports: dict[str, str] = {
     "ItemList": ".itemlist",
     "ItemListTypedDict": ".itemlist",
     "Mode": ".itemlist",
+    "ExcludeOwned": ".listitemsop",
     "Lineage": ".listitemsop",
     "ListItemsKind": ".listitemsop",
     "ListItemsRequest": ".listitemsop",

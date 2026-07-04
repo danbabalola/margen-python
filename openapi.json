@@ -3,10 +3,10 @@
   "info": {
     "title": "Margen Attack-Data API",
     "version": "1.0.0",
-    "description": "Credit-metered API that delivers labeled deepfake attack-data (real vs AI-generated face images and their platform-perturbed variants). Data is organized into benchmarks (versioned datasets, e.g. synthetic-face-v1), each with its own queryable dimensions. Reverse-engineered from the live b2b-website routes and the proven scripts/data-api/margen_client.py; this spec is the source of truth for the generated SDKs. Auth: Bearer token (or x-api-key). Pull one image per credit; test keys pull a free fixed sample. The canonical path prefix is /api/v1/data; the unversioned /api/data prefix remains a permanent alias."
+    "description": "Credit-metered API that delivers labeled deepfake attack-data (real vs AI-generated face images and their platform-perturbed variants). Data is organized into benchmarks (versioned datasets, e.g. synthetic-face-v1), each with its own queryable dimensions. Auth: Bearer token. Pull one image per credit; test keys pull a free fixed sample. The canonical path prefix is /api/v1/data; the unversioned /api/data prefix remains a permanent alias."
   },
   "servers": [
-    { "url": "https://margensoftware.com", "description": "Production" },
+    { "url": "https://www.margensoftware.com", "description": "Production" },
     { "url": "http://localhost:3000", "description": "Local dev" }
   ],
   "security": [{ "bearerAuth": [] }],
@@ -67,11 +67,14 @@
           { "name": "perturbation", "in": "query", "required": false, "schema": { "type": "string" }, "description": "Condition(s) applied. Values per /catalog (e.g. clean,jpeg_q70,fb_pipeline). Alias: `condition`." },
           { "name": "condition", "in": "query", "required": false, "schema": { "type": "string" }, "description": "Alias for `perturbation`." },
           { "name": "layer", "in": "query", "required": false, "schema": { "type": "string" }, "description": "Perturbation layer(s) (clean, layer1, layer2, layer2_recropped)." },
+          { "name": "base_id", "in": "query", "required": false, "schema": { "type": "string" }, "description": "Pull every perturbation of one base image. Take an item's base_id and add &perturbation=... to fetch a specific condition of the same image." },
           { "name": "source_real_id", "in": "query", "required": false, "schema": { "type": "string" }, "description": "Pull the full lineage descended from one sourced real image." },
+          { "name": "include", "in": "query", "required": false, "schema": { "type": "string" }, "description": "Opt-in extras, comma-separated. Pass `metadata` to attach the full per-image label object (skin tone, gender, age, scene, occlusion, difficulty, image spec, and confidences) to each item under `metadata`. Browsing labels is free (no bytes, no credit); only /download costs a credit. Fields are listed by /catalog." },
           { "name": "limit", "in": "query", "required": false, "schema": { "type": "integer", "minimum": 1, "maximum": 500, "default": 100 }, "description": "Page size. Values above 500 are clamped; the response sets limit_clamped." },
           { "name": "offset", "in": "query", "required": false, "schema": { "type": "integer", "minimum": 0, "default": 0 }, "description": "Pagination offset (offset/lineage modes)." },
           { "name": "cursor", "in": "query", "required": false, "schema": { "type": "string" }, "description": "Keyset cursor from a prior response's next_cursor (cursor mode)." },
-          { "name": "lineage", "in": "query", "required": false, "schema": { "type": "string", "enum": ["true"] }, "description": "Set to true to page over whole lineages." }
+          { "name": "lineage", "in": "query", "required": false, "schema": { "type": "string", "enum": ["true"] }, "description": "Set to true to page over whole lineages." },
+          { "name": "exclude_owned", "in": "query", "required": false, "schema": { "type": "string", "enum": ["true"] }, "description": "Offset mode only. Omit items you already own (credits are used per unique image, so owned items are free re-downloads). The response adds remaining/owned/total_matching and subset_exhausted with a message when you own the whole matching subset." }
         ],
         "responses": {
           "200": {
@@ -143,7 +146,7 @@
         "required": ["object", "id", "benchmark", "kind"],
         "properties": {
           "object": { "type": "string", "const": "attack_data_item" },
-          "id": { "type": "string", "description": "Pass to /api/v1/data/download/{itemId}." },
+          "id": { "type": "string", "description": "This exact image (a variant). Pass to /api/v1/data/download/{itemId}." },
           "benchmark": { "type": "string" },
           "kind": { "type": "string", "enum": ["real", "fake"] },
           "skin_tone": { "type": ["string", "null"] },
@@ -151,9 +154,10 @@
           "generator": { "type": ["string", "null"], "description": "Generator model (fake only)." },
           "perturbation": { "type": ["string", "null"] },
           "layer": { "type": ["string", "null"] },
-          "source_real_id": { "type": ["string", "null"], "description": "Lineage key; all variants of one source share it." },
-          "source_dataset": { "type": ["string", "null"], "description": "Provenance / license source (e.g. pexels)." },
-          "attributes": { "type": "object", "additionalProperties": true, "description": "Benchmark-specific fields; {} when the benchmark has none." }
+          "base_id": { "type": ["string", "null"], "description": "The base image this variant derives from. Hold base_id and change perturbation to pull another condition of the SAME image; all perturbations of one image share it." },
+          "source_real_id": { "type": ["string", "null"], "description": "Lineage key; the real source this descends from. All variants of one source (the real, its fakes, and their perturbations) share it." },
+          "attributes": { "type": "object", "additionalProperties": true, "description": "Benchmark-specific fields; {} when the benchmark has none." },
+          "metadata": { "type": ["object", "null"], "additionalProperties": true, "description": "The full per-image label object (skin tone incl. ITA, gender + cross-checks, age/race, scene/face/occlusion + confidences, difficulty, image spec). Present ONLY when the request passes include=metadata (on /items or /download); omitted otherwise. Flat and stable, so a streamed result builds a consistent table. Field schema is published by /catalog. Browsing labels is free; only /download costs a credit." }
         }
       },
       "Benchmark": {
@@ -194,7 +198,13 @@
           "offset": { "type": "integer" },
           "limit_clamped": { "type": "boolean", "description": "True when the requested limit exceeded the max and was clamped." },
           "total_lineages": { "type": "integer", "description": "Lineage mode only." },
-          "lineages": { "type": "integer", "description": "Lineage mode only: lineages on this page." }
+          "lineages": { "type": "integer", "description": "Lineage mode only: lineages on this page." },
+          "exclude_owned": { "type": "boolean", "description": "Present when exclude_owned=true was applied." },
+          "remaining": { "type": "integer", "description": "exclude_owned only: items matching the filter you do NOT yet own (also mirrored in total)." },
+          "owned": { "type": "integer", "description": "exclude_owned only: items matching the filter you already own." },
+          "total_matching": { "type": "integer", "description": "exclude_owned only: all items matching the filter, owned or not." },
+          "subset_exhausted": { "type": "boolean", "description": "exclude_owned only: true when you own every item matching the filter (remaining is 0 but total_matching is not)." },
+          "message": { "type": "string", "description": "Human-readable note, e.g. when the subset is exhausted." }
         }
       },
       "DimensionValue": {
@@ -247,7 +257,9 @@
           "url": { "type": "string", "format": "uri", "description": "Short-lived signed URL for one image (JPEG). Fetch with no auth header." },
           "expires_in": { "type": "integer", "description": "Seconds until the signed URL expires (300)." },
           "item": { "$ref": "#/components/schemas/AttackDataItem" },
-          "balance": { "type": ["integer", "null"], "description": "Credit balance after the debit; null for free test items." }
+          "balance": { "type": ["integer", "null"], "description": "Credit balance after the debit; null for free test items." },
+          "charged": { "type": "boolean", "description": "true if this pull debited a credit. false for free test items and for re-downloads of an item you already own (credits are used per unique image)." },
+          "already_owned": { "type": "boolean", "description": "true if you had already pulled this item; the URL is returned again for free, no debit." }
         }
       },
       "Error": {
@@ -262,13 +274,13 @@
               "unauthorized",
               "insufficient_credits",
               "forbidden_tier",
+              "forbidden_scope",
               "not_found",
               "unknown_benchmark",
               "ambiguous_benchmark",
               "invalid_param",
               "invalid_cursor",
               "rate_limited",
-              "service_unconfigured",
               "server_error"
             ]
           },

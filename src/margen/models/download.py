@@ -7,7 +7,7 @@ from margen.utils import validate_const
 import pydantic
 from pydantic import model_serializer
 from pydantic.functional_validators import AfterValidator
-from typing import Literal
+from typing import Literal, Optional
 from typing_extensions import Annotated, NotRequired, TypedDict
 
 
@@ -20,6 +20,10 @@ class DownloadTypedDict(TypedDict):
     object: Literal["download"]
     balance: NotRequired[Nullable[int]]
     r"""Credit balance after the debit; null for free test items."""
+    charged: NotRequired[bool]
+    r"""true if this pull debited a credit. false for free test items and for re-downloads of an item you already own (credits are used per unique image)."""
+    already_owned: NotRequired[bool]
+    r"""true if you had already pulled this item; the URL is returned again for free, no debit."""
 
 
 class Download(BaseModel):
@@ -39,9 +43,15 @@ class Download(BaseModel):
     balance: OptionalNullable[int] = UNSET
     r"""Credit balance after the debit; null for free test items."""
 
+    charged: Optional[bool] = None
+    r"""true if this pull debited a credit. false for free test items and for re-downloads of an item you already own (credits are used per unique image)."""
+
+    already_owned: Optional[bool] = None
+    r"""true if you had already pulled this item; the URL is returned again for free, no debit."""
+
     @model_serializer(mode="wrap")
     def serialize_model(self, handler):
-        optional_fields = set(["balance"])
+        optional_fields = set(["balance", "charged", "already_owned"])
         nullable_fields = set(["balance"])
         serialized = handler(self)
         m = {}
