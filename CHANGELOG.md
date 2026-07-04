@@ -4,6 +4,11 @@ All notable changes to the `margen` Python SDK. Versioning follows SemVer; the
 SDK version is decoupled from the API version. See the API's own versioning
 policy for the wire contract.
 
+## [0.1.3]
+
+### Changed
+- `iter_items` and `iter_lineages` now accept a Python list or tuple for any multi-value filter (e.g. `skin_tone=["dark", "brown"]`), joining it to the comma-separated form the API expects. A plain string still works unchanged, so both `skin_tone="dark"` and `skin_tone=["dark", "brown"]` are valid. This matches how notebook users naturally express an OR set; previously a list raised a client-side `ValidationError`. The raw typed `client.list_items` still takes the comma-separated string.
+
 ## [0.1.2]
 
 ### Changed

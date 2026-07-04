@@ -28,6 +28,23 @@ __all__ = ["iter_items", "iter_lineages", "download_selection"]
 _PAGE_KEYS = ("limit", "offset", "cursor", "lineage")
 
 
+def _normalize_filters(filters: dict) -> dict:
+    """Let callers pass a Python list/tuple for any multi-value filter.
+
+    The typed client and the API want multiple values as one comma-separated
+    string (form style, e.g. ``skin_tone=dark,brown``), so a list/tuple is
+    joined here. A plain string is passed through unchanged, so both
+    ``skin_tone="dark"`` and ``skin_tone=["dark", "brown"]`` work.
+    """
+    out: dict = {}
+    for key, value in filters.items():
+        if isinstance(value, (list, tuple)):
+            out[key] = ",".join(str(v) for v in value)
+        else:
+            out[key] = value
+    return out
+
+
 def iter_items(client: Margen, *, page_size: int = 500, **filters) -> Iterator[models.AttackDataItem]:
     """Yield every matching item, paging with offset/limit under the hood.
 
@@ -37,6 +54,7 @@ def iter_items(client: Margen, *, page_size: int = 500, **filters) -> Iterator[m
     """
     for key in _PAGE_KEYS:
         filters.pop(key, None)
+    filters = _normalize_filters(filters)
     offset = 0
     while True:
         resp = client.list_items(limit=page_size, offset=offset, **filters)
@@ -56,6 +74,7 @@ def iter_lineages(client: Margen, *, page_size: int = 100, **filters) -> Iterato
     """
     for key in _PAGE_KEYS:
         filters.pop(key, None)
+    filters = _normalize_filters(filters)
     offset = 0
     while True:
         resp = client.list_items(lineage="true", limit=page_size, offset=offset, **filters)
