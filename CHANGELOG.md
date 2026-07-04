@@ -4,6 +4,14 @@ All notable changes to the `margen` Python SDK. Versioning follows SemVer; the
 SDK version is decoupled from the API version. See the API's own versioning
 policy for the wire contract.
 
+## [0.1.7]
+
+### Added
+- `iter_items` / `iter_lineages` accept `exclude_owned=True` (as well as the API's `"true"`): yields only images the account does not already own, so a re-run after topping up credits skips everything already pulled and downloads just the new images.
+
+### Changed
+- `download_selection` progress now prints `(already owned, no charge)` for own-once re-downloads, instead of an unchanged balance that looked like a silent charge.
+
 ## [0.1.6]
 
 ### Removed

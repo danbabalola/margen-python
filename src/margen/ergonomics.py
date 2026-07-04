@@ -38,6 +38,13 @@ def _normalize_filters(filters: dict) -> dict:
     """
     out: dict = {}
     for key, value in filters.items():
+        if key == "exclude_owned":
+            # Convenience: accept a Python bool. The API wants the string "true"
+            # (or the param omitted), so True/"true" -> "true", anything falsy is
+            # dropped so it is never sent.
+            if value is True or value == "true":
+                out[key] = "true"
+            continue
         if isinstance(value, (list, tuple)):
             out[key] = ",".join(str(v) for v in value)
         else:
@@ -51,6 +58,11 @@ def iter_items(client: Margen, *, page_size: int = 500, **filters) -> Iterator[m
     Filters mirror ``client.list_items`` (benchmark, skin_tone, gender, kind,
     generator, perturbation, layer, source_real_id, ...); a list value is ORed.
     ``page_size`` is capped at 500 server-side.
+
+    Pass ``exclude_owned=True`` to yield only images this account does NOT
+    already own, so a re-run (e.g. after topping up credits) skips everything
+    already pulled and downloads just the new images. Feed the result straight to
+    ``download_selection``.
     """
     for key in _PAGE_KEYS:
         filters.pop(key, None)
@@ -139,7 +151,15 @@ def download_selection(
         saved.append(dest)
         if progress:
             balance = getattr(dl, "balance", None)
-            suffix = f" balance={balance}" if balance is not None else " (free)"
+            if getattr(dl, "already_owned", False):
+                # Own-once: a re-download of an image this account already paid
+                # for. No credit is taken, so make that explicit rather than
+                # printing an unchanged balance that looks like a silent charge.
+                suffix = " (already owned, no charge)"
+            elif balance is not None:
+                suffix = f" balance={balance}"
+            else:
+                suffix = " (free)"
             print(f"[{i}/{total}] {os.path.basename(dest)}{suffix}", flush=True)
     return saved
 
