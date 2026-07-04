@@ -127,12 +127,6 @@ paths:
           schema:
             type: "string"
           description: "Synthetic-only semantic context: indoor | outdoor | selfie. Comma-separated allowed. Real images have no scene (null), so filtering by scene restricts to synthetics; scene together with kind=real is empty by construction."
-        - name: "variant_group"
-          in: "query"
-          required: false
-          schema:
-            type: "string"
-          description: "Opaque generation-cluster id. Filter by one value to pull every near-duplicate synthetic sibling of that cluster, or dedup to one per group. Reals are null. Grouping/lineage only; it exposes no generation recipe and is not a billing bundle."
         - name: "include"
           in: "query"
           required: false
@@ -321,11 +315,6 @@ components:
             - "string"
             - "null"
           description: "Synthetic-only semantic context: indoor | outdoor | selfie. null for real images."
-        variant_group:
-          type:
-            - "string"
-            - "null"
-          description: "Opaque id grouping near-duplicate synthetic siblings from one generation cluster; null for reals. Navigation/lineage only (pull siblings or dedup), never a billing bundle; exposes no seed or prompt."
         attributes:
           type: "object"
           additionalProperties: true

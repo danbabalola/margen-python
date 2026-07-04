@@ -4,6 +4,11 @@ All notable changes to the `margen` Python SDK. Versioning follows SemVer; the
 SDK version is decoupled from the API version. See the API's own versioning
 policy for the wire contract.
 
+## [0.1.6]
+
+### Removed
+- `variant_group` (the `list_items` filter and the `AttackDataItem` field, both added in 0.1.5). It does not apply to `synthetic-face-v1`: the backing grouping id is absent and synthetic faces are independent, not grouped variants, so the field was always null. `scene` is unaffected. The concept returns with the variation-based benchmarks (face-swap, puppeteering) where a real grouping exists.
+
 ## [0.1.5]
 
 ### Added

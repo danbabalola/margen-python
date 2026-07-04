@@ -1,16 +1,16 @@
 lockVersion: 2.0.0
 id: b707bded-ef90-4057-9d59-d80195f989cd
 management:
-  docChecksum: 611ee9a5f0579e0fed6b5bb9d6e2592e
+  docChecksum: 9151888c9d07a5c3f7781033dcd304cc
   docVersion: 1.0.0
   speakeasyVersion: 1.788.1
   generationVersion: 2.915.1
-  releaseVersion: 0.1.5
-  configChecksum: 0c4e7d1296fa366da33c8cbf7b4bbf3f
+  releaseVersion: 0.1.6
+  configChecksum: c9889a3ecb8114664bb2d251cec145bd
 persistentEdits:
-  generation_id: 7d62dc66-bf79-41bc-ad5f-29a078597c9e
-  pristine_commit_hash: b49b47988a48f66b48be07b694fac0ddde59f941
-  pristine_tree_hash: c508fe334a5ae1ba8271b5680ff6a7f282d547b4
+  generation_id: 7cc3f78f-2c05-4a94-847b-61df0d980a87
+  pristine_commit_hash: 46a4eedbc6b98857045e58c95c52109d5de356c1
+  pristine_tree_hash: 69f69c247e557513c5c6606ed514f93ede19f521
 features:
   python:
     additionalDependencies: 1.1.0
@@ -58,8 +58,8 @@ trackedFiles:
     pristine_git_object: e4f489b7f0a6646eb2cd1e04c7699eaee103d6fc
   docs/models/attackdataitem.md:
     id: e1ff6822248f
-    last_write_checksum: sha1:ddde83f3da46d408f02f5d65af76ccf7d980ca35
-    pristine_git_object: 08e758b74f4de170594ae02a07e34f6433fbda6a
+    last_write_checksum: sha1:426237796169500fecbdca17677e7e0056ea4fb3
+    pristine_git_object: fc3f2e22585a4d7052e6fa28a15d3097d4e80e17
   docs/models/available.md:
     id: c08d8095c558
     last_write_checksum: sha1:56248f880bd6e453bf9898210c80efbb3fa1e91a
@@ -130,8 +130,8 @@ trackedFiles:
     pristine_git_object: 820af58c160dd04fecbdcba63b1596ce6e6f7c4e
   docs/models/listitemsrequest.md:
     id: 2c96a68cda86
-    last_write_checksum: sha1:df88a2176e8242afc56900025a80ee9c088d4cc2
-    pristine_git_object: 4d53302e475de4c14889388eff45526f296d91e5
+    last_write_checksum: sha1:829e313a48600e1cf7509e7cf58771d05180ad9c
+    pristine_git_object: 0eec9dc136c060e1532b87d628d93dd46efb3240
   docs/models/listitemsresponse.md:
     id: fa7ebf714489
     last_write_checksum: sha1:abdc0455318d8a0c211c3e6a949d2756e589e383
@@ -170,8 +170,8 @@ trackedFiles:
     pristine_git_object: c00200cfd072e9febac5d6be783da1925d11dac0
   pyproject.toml:
     id: 5d07e7d72637
-    last_write_checksum: sha1:f2495880942afc305dc1ff0ceef73fee189bf1f0
-    pristine_git_object: 6f87cdb53c2a04121b9a050c23d6b5df69b32d7f
+    last_write_checksum: sha1:f7df733fe9e5f88aa6e184866258f89203e06cfa
+    pristine_git_object: 212b24b306df9a534731b0fd404a5bdcce119832
   scripts/publish.sh:
     id: fe273b08f514
     last_write_checksum: sha1:adc9b741c12ad1591ab4870eabe20f0d0a86cd1a
@@ -194,8 +194,8 @@ trackedFiles:
     pristine_git_object: aba7d0cf9cc04d11856fd911ad894104161cf29f
   src/margen/_version.py:
     id: a189680ef7fb
-    last_write_checksum: sha1:9e0197cf94ae2bd0541051912d0cccc016bda9f9
-    pristine_git_object: 9a1f0de201ce79a9c514309c85abdad4984cecb7
+    last_write_checksum: sha1:af1a2baf22737aa09d4963ab5601bcec2107ac19
+    pristine_git_object: aed993e9c8740934dd9220948ca05c2a02f10053
   src/margen/basesdk.py:
     id: b647232cc7ec
     last_write_checksum: sha1:2bc922a19f34e44c869e132a3ea450ba2728c243
@@ -234,8 +234,8 @@ trackedFiles:
     pristine_git_object: e4334011ffe3c46de2756199967c583ca7853c6a
   src/margen/models/attackdataitem.py:
     id: 81ce0ff51beb
-    last_write_checksum: sha1:89980e89324d65d52827be4e4788316b413d286b
-    pristine_git_object: a3f22c5a7ff71b8c2331ef12473797a68bc66b3d
+    last_write_checksum: sha1:dcd518bd996786093c9818e4dede2f7595509150
+    pristine_git_object: d441b2a6f02f6f0feb07e3d3e971a7bc19b094e8
   src/margen/models/benchmark.py:
     id: 62f37024a3e7
     last_write_checksum: sha1:65e98c845b9b1124a507fcf3a5e3c674112112db
@@ -278,8 +278,8 @@ trackedFiles:
     pristine_git_object: 37da0a2d581f4be9c86ea779fca81820d244fa2c
   src/margen/models/listitemsop.py:
     id: b495f3d0f7fc
-    last_write_checksum: sha1:03f112e9d37e0c4afe24c9f4f634b99122accb80
-    pristine_git_object: 4531e01f6e8dbfb53dd99427bbba60209a626203
+    last_write_checksum: sha1:030e5fdebe0406de67469bbdcf7af911b200c745
+    pristine_git_object: 8825a1c7f28e4410d64eda35efa0f17df7e89521
   src/margen/models/security.py:
     id: ed0b73a10eb1
     last_write_checksum: sha1:6da97c82ac602b198f812640566466f8351d536f
@@ -294,8 +294,8 @@ trackedFiles:
     pristine_git_object: 3e38f1a929f7d6b1d6de74604aa87e3d8f010544
   src/margen/sdk.py:
     id: 40bb9bdaf00c
-    last_write_checksum: sha1:1edf8b9c9913a56d0e3306aea6a672eaef4947d7
-    pristine_git_object: 77262290199d3ee6041d951b2a4e9e631250d8cb
+    last_write_checksum: sha1:1169baded7ea8c5f629dd0f15ef90b1bd4054a0a
+    pristine_git_object: 7fe84a96e7e721633684bce445cb3c428559265b
   src/margen/sdkconfiguration.py:
     id: 8888ac869def
     last_write_checksum: sha1:4959233cebf97c4a32f9b9892202541f12a27218

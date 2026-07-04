@@ -512,7 +512,6 @@ class Margen(BaseSDK):
         base_id: Optional[str] = None,
         source_real_id: Optional[str] = None,
         scene: Optional[str] = None,
-        variant_group: Optional[str] = None,
         include: Optional[str] = None,
         limit: Optional[int] = 100,
         offset: Optional[int] = 0,
@@ -545,7 +544,6 @@ class Margen(BaseSDK):
         :param base_id: Pull every perturbation of one base image. Take an item's base_id and add &perturbation=... to fetch a specific condition of the same image.
         :param source_real_id: Pull the full lineage descended from one sourced real image.
         :param scene: Synthetic-only semantic context: indoor | outdoor | selfie. Comma-separated allowed. Real images have no scene (null), so filtering by scene restricts to synthetics; scene together with kind=real is empty by construction.
-        :param variant_group: Opaque generation-cluster id. Filter by one value to pull every near-duplicate synthetic sibling of that cluster, or dedup to one per group. Reals are null. Grouping/lineage only; it exposes no generation recipe and is not a billing bundle.
         :param include: Opt-in extras, comma-separated. Pass `metadata` to attach the full per-image label object (skin tone, gender, age, scene, occlusion, difficulty, image spec, and confidences) to each item under `metadata`. Browsing labels is free (no bytes, no credit); only /download costs a credit. Fields are listed by /catalog.
         :param limit: Page size. Values above 500 are clamped; the response sets limit_clamped.
         :param offset: Pagination offset (offset/lineage modes).
@@ -579,7 +577,6 @@ class Margen(BaseSDK):
             base_id=base_id,
             source_real_id=source_real_id,
             scene=scene,
-            variant_group=variant_group,
             include=include,
             limit=limit,
             offset=offset,
@@ -654,7 +651,6 @@ class Margen(BaseSDK):
                 base_id=base_id,
                 source_real_id=source_real_id,
                 scene=scene,
-                variant_group=variant_group,
                 include=include,
                 limit=limit,
                 offset=offset,
@@ -705,7 +701,6 @@ class Margen(BaseSDK):
         base_id: Optional[str] = None,
         source_real_id: Optional[str] = None,
         scene: Optional[str] = None,
-        variant_group: Optional[str] = None,
         include: Optional[str] = None,
         limit: Optional[int] = 100,
         offset: Optional[int] = 0,
@@ -738,7 +733,6 @@ class Margen(BaseSDK):
         :param base_id: Pull every perturbation of one base image. Take an item's base_id and add &perturbation=... to fetch a specific condition of the same image.
         :param source_real_id: Pull the full lineage descended from one sourced real image.
         :param scene: Synthetic-only semantic context: indoor | outdoor | selfie. Comma-separated allowed. Real images have no scene (null), so filtering by scene restricts to synthetics; scene together with kind=real is empty by construction.
-        :param variant_group: Opaque generation-cluster id. Filter by one value to pull every near-duplicate synthetic sibling of that cluster, or dedup to one per group. Reals are null. Grouping/lineage only; it exposes no generation recipe and is not a billing bundle.
         :param include: Opt-in extras, comma-separated. Pass `metadata` to attach the full per-image label object (skin tone, gender, age, scene, occlusion, difficulty, image spec, and confidences) to each item under `metadata`. Browsing labels is free (no bytes, no credit); only /download costs a credit. Fields are listed by /catalog.
         :param limit: Page size. Values above 500 are clamped; the response sets limit_clamped.
         :param offset: Pagination offset (offset/lineage modes).
@@ -772,7 +766,6 @@ class Margen(BaseSDK):
             base_id=base_id,
             source_real_id=source_real_id,
             scene=scene,
-            variant_group=variant_group,
             include=include,
             limit=limit,
             offset=offset,
@@ -850,7 +843,6 @@ class Margen(BaseSDK):
                 base_id=base_id,
                 source_real_id=source_real_id,
                 scene=scene,
-                variant_group=variant_group,
                 include=include,
                 limit=limit,
                 offset=offset,

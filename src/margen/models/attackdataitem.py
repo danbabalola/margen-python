@@ -44,8 +44,6 @@ class AttackDataItemTypedDict(TypedDict):
     r"""Lineage key; the real source this descends from. All variants of one source (the real, its fakes, and their perturbations) share it."""
     scene: NotRequired[Nullable[str]]
     r"""Synthetic-only semantic context: indoor | outdoor | selfie. null for real images."""
-    variant_group: NotRequired[Nullable[str]]
-    r"""Opaque id grouping near-duplicate synthetic siblings from one generation cluster; null for reals. Navigation/lineage only (pull siblings or dedup), never a billing bundle; exposes no seed or prompt."""
     attributes: NotRequired[Dict[str, Any]]
     r"""Benchmark-specific fields; {} when the benchmark has none."""
     metadata: NotRequired[Nullable[Dict[str, Any]]]
@@ -88,9 +86,6 @@ class AttackDataItem(BaseModel):
     scene: OptionalNullable[str] = UNSET
     r"""Synthetic-only semantic context: indoor | outdoor | selfie. null for real images."""
 
-    variant_group: OptionalNullable[str] = UNSET
-    r"""Opaque id grouping near-duplicate synthetic siblings from one generation cluster; null for reals. Navigation/lineage only (pull siblings or dedup), never a billing bundle; exposes no seed or prompt."""
-
     attributes: Optional[Dict[str, Any]] = None
     r"""Benchmark-specific fields; {} when the benchmark has none."""
 
@@ -109,7 +104,6 @@ class AttackDataItem(BaseModel):
                 "base_id",
                 "source_real_id",
                 "scene",
-                "variant_group",
                 "attributes",
                 "metadata",
             ]
@@ -124,7 +118,6 @@ class AttackDataItem(BaseModel):
                 "base_id",
                 "source_real_id",
                 "scene",
-                "variant_group",
                 "metadata",
             ]
         )
