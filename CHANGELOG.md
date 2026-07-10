@@ -4,6 +4,11 @@ All notable changes to the `margen` Python SDK. Versioning follows SemVer; the
 SDK version is decoupled from the API version. See the API's own versioning
 policy for the wire contract.
 
+## [0.1.8]
+
+### Changed
+- Lowered the minimum Python from 3.10 to 3.9 (`requires-python = ">=3.9"`), so `pip install margen` works on 3.9. The generated client is typing-based (no `match`, no PEP 604 runtime unions) and the dependencies (pydantic 2.11, httpx 0.28) support 3.9; 3.9 is the true floor, pydantic 2.11 itself requires it. NOTE: a future `speakeasy run` may reset this to the generator default (3.10); re-apply `>=3.9` after regenerating.
+
 ## [0.1.7]
 
 ### Added
