@@ -17,15 +17,23 @@ workflow wants and a codegen cannot produce: paginated iteration and a one-call
 from __future__ import annotations
 
 import os
+import random
 import urllib.request
 import uuid
-from typing import Iterator, List, Optional
+from typing import Dict, Iterator, List, Optional
 
 from margen import Margen, errors, models
 
-__all__ = ["iter_items", "iter_lineages", "download_selection"]
+__all__ = [
+    "iter_items",
+    "iter_lineages",
+    "iter_distinct_identities",
+    "group_by_identity",
+    "unique_identities",
+    "download_selection",
+]
 
-_PAGE_KEYS = ("limit", "offset", "cursor", "lineage")
+_PAGE_KEYS = ("limit", "offset", "cursor", "lineage", "distinct_identities")
 
 
 def _normalize_filters(filters: dict) -> dict:
@@ -96,6 +104,56 @@ def iter_lineages(client: Margen, *, page_size: int = 100, **filters) -> Iterato
             break
         # Lineage mode pages by lineage: advance by the distinct lineages returned.
         offset += len({it.source_real_id for it in data if it.source_real_id})
+
+
+def iter_distinct_identities(
+    client: Margen, *, page_size: int = 500, **filters
+) -> Iterator[models.AttackDataItem]:
+    """Yield ONE representative item per identity (server-side dedupe by person).
+
+    Opt-in server mode (no default cap). Composes with filters, e.g.
+    ``iter_distinct_identities(client, benchmark=..., kind="real")`` yields one
+    real image per person. The representative is deterministic. Feed straight to
+    ``download_selection``.
+    """
+    for key in _PAGE_KEYS:
+        filters.pop(key, None)
+    filters = _normalize_filters(filters)
+    offset = 0
+    while True:
+        resp = client.list_items(distinct_identities="true", limit=page_size, offset=offset, **filters)
+        page = resp.result if resp is not None else None
+        data = (page.data if page is not None else None) or []
+        yield from data
+        if not data or page is None or not page.has_more:
+            break
+        offset += len(data)  # one row per identity, so advance by rows returned
+
+
+def group_by_identity(items) -> Dict[Optional[str], List]:
+    """Client-side: group already-pulled items by ``identity_id`` (the reconciled
+    person). Items with no identity_id are grouped under ``None``."""
+    groups: Dict[Optional[str], List] = {}
+    for it in items:
+        groups.setdefault(getattr(it, "identity_id", None), []).append(it)
+    return groups
+
+
+def unique_identities(items, *, n: int = 1, seed: Optional[int] = None) -> List:
+    """Client-side: keep at most ``n`` item(s) per identity from an already-pulled
+    list (dedupe / cap by person). Deterministic (keeps input order) unless a
+    ``seed`` is given, which shuffles within each identity reproducibly. Items with
+    no identity_id can't be deduped, so each is kept."""
+    out: List = []
+    for key, members in group_by_identity(items).items():
+        if key is None:
+            out.extend(members)
+            continue
+        picks = list(members)
+        if seed is not None:
+            random.Random(seed).shuffle(picks)
+        out.extend(picks[:n])
+    return out
 
 
 def download_selection(

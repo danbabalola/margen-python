@@ -518,6 +518,7 @@ class Margen(BaseSDK):
         cursor: Optional[str] = None,
         lineage: Optional[models.Lineage] = None,
         exclude_owned: Optional[models.ExcludeOwned] = None,
+        distinct_identities: Optional[models.DistinctIdentities] = None,
         retries: OptionalNullable[utils.RetryConfig] = UNSET,
         server_url: Optional[str] = None,
         timeout_ms: Optional[int] = None,
@@ -550,6 +551,7 @@ class Margen(BaseSDK):
         :param cursor: Keyset cursor from a prior response's next_cursor (cursor mode).
         :param lineage: Set to true to page over whole lineages.
         :param exclude_owned: Offset mode only. Omit items you already own (credits are used per unique image, so owned items are free re-downloads). The response adds remaining/owned/total_matching and subset_exhausted with a message when you own the whole matching subset.
+        :param distinct_identities: Set to true to return ONE representative item per identity_id (dedupe by person; opt-in, no default cap). Composes with filters (e.g. + kind=real returns one real per person). Deterministic representative. Response sets mode=distinct_identities with total_identities; paginate with limit/offset over identities.
         :param retries: Override the default retry configuration for this method
         :param server_url: Override the default server URL for this method
         :param timeout_ms: Override the default request timeout configuration for this method in milliseconds
@@ -583,6 +585,7 @@ class Margen(BaseSDK):
             cursor=cursor,
             lineage=lineage,
             exclude_owned=exclude_owned,
+            distinct_identities=distinct_identities,
         )
 
         req = self._build_request(
@@ -657,6 +660,7 @@ class Margen(BaseSDK):
                 cursor=next_cursor,
                 lineage=lineage,
                 exclude_owned=exclude_owned,
+                distinct_identities=distinct_identities,
                 retries=retries,
                 server_url=server_url,
                 timeout_ms=timeout_ms,
@@ -707,6 +711,7 @@ class Margen(BaseSDK):
         cursor: Optional[str] = None,
         lineage: Optional[models.Lineage] = None,
         exclude_owned: Optional[models.ExcludeOwned] = None,
+        distinct_identities: Optional[models.DistinctIdentities] = None,
         retries: OptionalNullable[utils.RetryConfig] = UNSET,
         server_url: Optional[str] = None,
         timeout_ms: Optional[int] = None,
@@ -739,6 +744,7 @@ class Margen(BaseSDK):
         :param cursor: Keyset cursor from a prior response's next_cursor (cursor mode).
         :param lineage: Set to true to page over whole lineages.
         :param exclude_owned: Offset mode only. Omit items you already own (credits are used per unique image, so owned items are free re-downloads). The response adds remaining/owned/total_matching and subset_exhausted with a message when you own the whole matching subset.
+        :param distinct_identities: Set to true to return ONE representative item per identity_id (dedupe by person; opt-in, no default cap). Composes with filters (e.g. + kind=real returns one real per person). Deterministic representative. Response sets mode=distinct_identities with total_identities; paginate with limit/offset over identities.
         :param retries: Override the default retry configuration for this method
         :param server_url: Override the default server URL for this method
         :param timeout_ms: Override the default request timeout configuration for this method in milliseconds
@@ -772,6 +778,7 @@ class Margen(BaseSDK):
             cursor=cursor,
             lineage=lineage,
             exclude_owned=exclude_owned,
+            distinct_identities=distinct_identities,
         )
 
         req = self._build_request_async(
@@ -849,6 +856,7 @@ class Margen(BaseSDK):
                 cursor=next_cursor,
                 lineage=lineage,
                 exclude_owned=exclude_owned,
+                distinct_identities=distinct_identities,
                 retries=retries,
                 server_url=server_url,
                 timeout_ms=timeout_ms,

@@ -172,6 +172,14 @@ paths:
             enum:
               - "true"
           description: "Offset mode only. Omit items you already own (credits are used per unique image, so owned items are free re-downloads). The response adds remaining/owned/total_matching and subset_exhausted with a message when you own the whole matching subset."
+        - name: "distinct_identities"
+          in: "query"
+          required: false
+          schema:
+            type: "string"
+            enum:
+              - "true"
+          description: "Set to true to return ONE representative item per identity_id (dedupe by person; opt-in, no default cap). Composes with filters (e.g. + kind=real returns one real per person). Deterministic representative. Response sets mode=distinct_identities with total_identities; paginate with limit/offset over identities."
       responses:
         "200":
           description: "A page of items."
@@ -310,6 +318,11 @@ components:
             - "string"
             - "null"
           description: "Lineage key; the real source this descends from. All variants of one source (the real, its fakes, and their perturbations) share it."
+        identity_id:
+          type:
+            - "string"
+            - "null"
+          description: "The reconciled PERSON identity. Spans all of a person's source images/videos (broader than source_real_id, which is one source image's lineage), so a real and its identity-preserving fakes share it. Use it to dedupe by person: pass distinct_identities=true for one item per identity, or group/cap client-side. null for the few unresolved rows."
         scene:
           type:
             - "string"

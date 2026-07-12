@@ -24,6 +24,10 @@ ExcludeOwned = Literal["true",]
 r"""Offset mode only. Omit items you already own (credits are used per unique image, so owned items are free re-downloads). The response adds remaining/owned/total_matching and subset_exhausted with a message when you own the whole matching subset."""
 
 
+DistinctIdentities = Literal["true",]
+r"""Set to true to return ONE representative item per identity_id (dedupe by person; opt-in, no default cap). Composes with filters (e.g. + kind=real returns one real per person). Deterministic representative. Response sets mode=distinct_identities with total_identities; paginate with limit/offset over identities."""
+
+
 class ListItemsRequestTypedDict(TypedDict):
     benchmark: NotRequired[str]
     r"""Benchmark id (e.g. synthetic-face-v1). Effectively required: omitting it works only while the key sees exactly one benchmark; once a second exists, omission returns 400 listing the available ids."""
@@ -59,6 +63,8 @@ class ListItemsRequestTypedDict(TypedDict):
     r"""Set to true to page over whole lineages."""
     exclude_owned: NotRequired[ExcludeOwned]
     r"""Offset mode only. Omit items you already own (credits are used per unique image, so owned items are free re-downloads). The response adds remaining/owned/total_matching and subset_exhausted with a message when you own the whole matching subset."""
+    distinct_identities: NotRequired[DistinctIdentities]
+    r"""Set to true to return ONE representative item per identity_id (dedupe by person; opt-in, no default cap). Composes with filters (e.g. + kind=real returns one real per person). Deterministic representative. Response sets mode=distinct_identities with total_identities; paginate with limit/offset over identities."""
 
 
 class ListItemsRequest(BaseModel):
@@ -164,6 +170,12 @@ class ListItemsRequest(BaseModel):
     ] = None
     r"""Offset mode only. Omit items you already own (credits are used per unique image, so owned items are free re-downloads). The response adds remaining/owned/total_matching and subset_exhausted with a message when you own the whole matching subset."""
 
+    distinct_identities: Annotated[
+        Optional[DistinctIdentities],
+        FieldMetadata(query=QueryParamMetadata(style="form", explode=True)),
+    ] = None
+    r"""Set to true to return ONE representative item per identity_id (dedupe by person; opt-in, no default cap). Composes with filters (e.g. + kind=real returns one real per person). Deterministic representative. Response sets mode=distinct_identities with total_identities; paginate with limit/offset over identities."""
+
     @model_serializer(mode="wrap")
     def serialize_model(self, handler):
         optional_fields = set(
@@ -185,6 +197,7 @@ class ListItemsRequest(BaseModel):
                 "cursor",
                 "lineage",
                 "exclude_owned",
+                "distinct_identities",
             ]
         )
         serialized = handler(self)

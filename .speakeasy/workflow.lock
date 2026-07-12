@@ -1,9 +1,9 @@
-speakeasyVersion: 1.788.1
+speakeasyVersion: 1.789.3
 sources:
     Margen Attack-Data API:
         sourceNamespace: margen-attack-data-api
-        sourceRevisionDigest: sha256:84a480b95ce145c7a04641b8db744f1278ae1e3eebc32e749994200d5170b25b
-        sourceBlobDigest: sha256:a78ccfae31e722ff8b9de41ff97b69ef5c4f7faa0cd5213e71c2ab70cdc299fc
+        sourceRevisionDigest: sha256:1fce25fb9f6da71bd2ebec63a3774ad632703f2afd11bfbd2c5290cf312a5187
+        sourceBlobDigest: sha256:a265f54b21b3cfe42e4289c474a22dbde159f5729bd886a869a1494664bda20d
         tags:
             - latest
             - 1.0.0
@@ -11,10 +11,10 @@ targets:
     margen:
         source: Margen Attack-Data API
         sourceNamespace: margen-attack-data-api
-        sourceRevisionDigest: sha256:84a480b95ce145c7a04641b8db744f1278ae1e3eebc32e749994200d5170b25b
-        sourceBlobDigest: sha256:a78ccfae31e722ff8b9de41ff97b69ef5c4f7faa0cd5213e71c2ab70cdc299fc
+        sourceRevisionDigest: sha256:1fce25fb9f6da71bd2ebec63a3774ad632703f2afd11bfbd2c5290cf312a5187
+        sourceBlobDigest: sha256:a265f54b21b3cfe42e4289c474a22dbde159f5729bd886a869a1494664bda20d
         codeSamplesNamespace: margen-attack-data-api-python-code-samples
-        codeSamplesRevisionDigest: sha256:ecbe718542d27270f6969771933196f82f9d5e43132db6acd090619c6e71dd37
+        codeSamplesRevisionDigest: sha256:d483fd1622f7851a3a8c400658e36ff40b19606ab838744b217e0b5b5feb53cb
 workflow:
     workflowVersion: 1.0.0
     speakeasyVersion: latest

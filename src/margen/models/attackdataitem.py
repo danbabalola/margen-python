@@ -42,6 +42,8 @@ class AttackDataItemTypedDict(TypedDict):
     r"""The base image this variant derives from. Hold base_id and change perturbation to pull another condition of the SAME image; all perturbations of one image share it."""
     source_real_id: NotRequired[Nullable[str]]
     r"""Lineage key; the real source this descends from. All variants of one source (the real, its fakes, and their perturbations) share it."""
+    identity_id: NotRequired[Nullable[str]]
+    r"""The reconciled PERSON identity. Spans all of a person's source images/videos (broader than source_real_id, which is one source image's lineage), so a real and its identity-preserving fakes share it. Use it to dedupe by person: pass distinct_identities=true for one item per identity, or group/cap client-side. null for the few unresolved rows."""
     scene: NotRequired[Nullable[str]]
     r"""Synthetic-only semantic context: indoor | outdoor | selfie. null for real images."""
     attributes: NotRequired[Dict[str, Any]]
@@ -83,6 +85,9 @@ class AttackDataItem(BaseModel):
     source_real_id: OptionalNullable[str] = UNSET
     r"""Lineage key; the real source this descends from. All variants of one source (the real, its fakes, and their perturbations) share it."""
 
+    identity_id: OptionalNullable[str] = UNSET
+    r"""The reconciled PERSON identity. Spans all of a person's source images/videos (broader than source_real_id, which is one source image's lineage), so a real and its identity-preserving fakes share it. Use it to dedupe by person: pass distinct_identities=true for one item per identity, or group/cap client-side. null for the few unresolved rows."""
+
     scene: OptionalNullable[str] = UNSET
     r"""Synthetic-only semantic context: indoor | outdoor | selfie. null for real images."""
 
@@ -103,6 +108,7 @@ class AttackDataItem(BaseModel):
                 "layer",
                 "base_id",
                 "source_real_id",
+                "identity_id",
                 "scene",
                 "attributes",
                 "metadata",
@@ -117,6 +123,7 @@ class AttackDataItem(BaseModel):
                 "layer",
                 "base_id",
                 "source_real_id",
+                "identity_id",
                 "scene",
                 "metadata",
             ]

@@ -4,6 +4,13 @@ All notable changes to the `margen` Python SDK. Versioning follows SemVer; the
 SDK version is decoupled from the API version. See the API's own versioning
 policy for the wire contract.
 
+## [0.1.9]
+
+### Added
+- `identity_id` on `AttackDataItem`: the reconciled PERSON identity (spans all of a person's source images/videos; a real and its identity-preserving fakes share it). Broader than `source_real_id` (one source image's lineage). Additive wire field; requires a `speakeasy run` regenerate to appear typed on the model.
+- Opt-in server dedupe: `distinct_identities="true"` on `list_items` returns ONE representative item per identity (composes with filters, e.g. `kind="real"` -> one real per person; no default cap). New ergonomic iterator `iter_distinct_identities(client, **filters)`.
+- Client-side helpers `unique_identities(items, n=1, seed=None)` (cap/dedupe an already-pulled list by person) and `group_by_identity(items)` (`{identity_id: [items]}`). Gating is left to the user by design; no default identity cap.
+
 ## [0.1.8]
 
 ### Changed
