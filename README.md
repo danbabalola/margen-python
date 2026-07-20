@@ -21,14 +21,14 @@ Beyond the generated client, `margen.ergonomics` adds notebook-friendly helpers 
 from margen import Margen
 from margen.ergonomics import iter_items, download_selection
 
-client = Margen(bearer_auth="mgn_test_...")   # your key from margensoftware.com/keys
+client = Margen(bearer_auth="mgn_test_...")   # your key from www.margensoftware.com/keys
 
 picks = list(iter_items(client, benchmark="synthetic-face-v1", kind="fake", skin_tone="dark"))
 download_selection(client, picks, "out/")     # signed-URL fetch, deterministic idempotency, stop-on-402
 ```
 
-- `iter_items(client, **filters)` / `iter_lineages(client, **filters)` — yield the whole result set, paging under the hood.
-- `download_selection(client, items, out_dir)` — download a selection to a folder; previews cleanly in Colab. Run `notebooks/quickstart.ipynb`.
+- `iter_items(client, **filters)` / `iter_lineages(client, **filters)`, yield the whole result set, paging under the hood.
+- `download_selection(client, items, out_dir)`, download a selection to a folder; previews cleanly in Colab. Run `notebooks/quickstart.ipynb`.
 
 <!-- Start Table of Contents [toc] -->
 ## Table of Contents
@@ -71,7 +71,7 @@ The SDK can be installed with *uv*, *pip*, or *poetry* package managers.
 *uv* is a fast Python package installer and resolver, designed as a drop-in replacement for pip and pip-tools. It's recommended for its speed and modern Python tooling capabilities.
 
 ```bash
-uv add git+<UNSET>.git
+uv add margen
 ```
 
 ### PIP
@@ -79,7 +79,7 @@ uv add git+<UNSET>.git
 *PIP* is the default package installer for Python, enabling easy installation and management of packages from PyPI via the command line.
 
 ```bash
-pip install git+<UNSET>.git
+pip install margen
 ```
 
 ### Poetry
@@ -87,7 +87,7 @@ pip install git+<UNSET>.git
 *Poetry* is a modern tool that simplifies dependency management and package publishing by using a single `pyproject.toml` file to handle project metadata and dependencies.
 
 ```bash
-poetry add git+<UNSET>.git
+poetry add margen
 ```
 
 ### Shell and script usage with `uv`
@@ -372,10 +372,10 @@ with Margen(
 
 You can override the default server globally by passing a server index to the `server_idx: int` optional parameter when initializing the SDK client instance. The selected server will then be used as the default on the operations that use it. This table lists the indexes associated with the available servers:
 
-| #   | Server                       | Description |
-| --- | ---------------------------- | ----------- |
-| 0   | `https://margensoftware.com` | Production  |
-| 1   | `http://localhost:3000`      | Local dev   |
+| #   | Server                           | Description |
+| --- | -------------------------------- | ----------- |
+| 0   | `https://www.margensoftware.com` | Production  |
+| 1   | `http://localhost:3000`          | Local dev   |
 
 #### Example
 

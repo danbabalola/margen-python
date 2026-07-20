@@ -3,7 +3,7 @@
 import importlib.metadata
 
 __title__: str = "margen"
-__version__: str = "0.1.9"
+__version__: str = "0.1.10"
 __openapi_doc_version__: str = "1.0.0"
 __gen_version__: str = "2.916.4"
 __user_agent__: str = "speakeasy-sdk/python 0.1.9 2.916.4 1.0.0 margen"

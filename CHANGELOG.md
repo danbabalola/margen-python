@@ -4,6 +4,13 @@ All notable changes to the `margen` Python SDK. Versioning follows SemVer; the
 SDK version is decoupled from the API version. See the API's own versioning
 policy for the wire contract.
 
+## [0.1.10]
+
+### Fixed
+- README install commands now use the published package (`pip install margen`, `uv add margen`, `poetry add margen`) instead of an unresolved `git+` placeholder.
+- README server table, inline key link, and the Colab quickstart now point at the canonical `www.margensoftware.com` host (the apex redirect can drop the `Authorization` header).
+- Removed em-dashes from the README, CHANGELOG, and quickstart notebook.
+
 ## [0.1.9]
 
 ### Added
@@ -39,8 +46,8 @@ policy for the wire contract.
 
 ### Added
 - `list_items` (and `download_item`) now expose `include` (opt-in extras, comma-separated). Pass `include="metadata"` to attach the full per-image label object under each item's `metadata`. Browsing labels is free; only `/download` costs a credit.
-- `AttackDataItem.metadata` — the full flat label object, present only when the request passes `include=metadata`.
-- `AttackDataItem.base_id` — the base image a variant derives from; hold it and change `perturbation` to pull another condition of the same image. Also a filter on `list_items`.
+- `AttackDataItem.metadata`, the full flat label object, present only when the request passes `include=metadata`.
+- `AttackDataItem.base_id`, the base image a variant derives from; hold it and change `perturbation` to pull another condition of the same image. Also a filter on `list_items`.
 - `exclude_owned` on `list_items` (offset mode): omit images you already own, with `remaining`/`owned`/`total_matching` and a `subset_exhausted` message.
 
 ### Changed
@@ -60,8 +67,8 @@ policy for the wire contract.
 
 ### Added
 - `margen.ergonomics` hand-written helpers over the typed client:
-  - `iter_items(client, **filters)` and `iter_lineages(client, **filters)` — paginate the full result set.
-  - `download_selection(client, items, out_dir)` — one-call bulk download to a folder (two-step signed-URL fetch, deterministic per-item idempotency, `/usage` preflight, stop-on-402).
+  - `iter_items(client, **filters)` and `iter_lineages(client, **filters)`, paginate the full result set.
+  - `download_selection(client, items, out_dir)`, one-call bulk download to a folder (two-step signed-URL fetch, deterministic per-item idempotency, `/usage` preflight, stop-on-402).
 - `notebooks/quickstart.ipynb` with an "Open in Colab" badge.
 
 ## [0.1.0]
