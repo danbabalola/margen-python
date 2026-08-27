@@ -16,8 +16,12 @@ workflow wants and a codegen cannot produce: paginated iteration and a one-call
 
 from __future__ import annotations
 
+import io
+import json
 import os
 import random
+import urllib.error
+import urllib.parse
 import urllib.request
 import uuid
 from typing import Dict, Iterator, List, Optional
@@ -31,6 +35,8 @@ __all__ = [
     "group_by_identity",
     "unique_identities",
     "download_selection",
+    "get_release",
+    "pull_release",
 ]
 
 _PAGE_KEYS = ("limit", "offset", "cursor", "lineage", "distinct_identities")
@@ -220,6 +226,84 @@ def download_selection(
                 suffix = " (free)"
             print(f"[{i}/{total}] {os.path.basename(dest)}{suffix}", flush=True)
     return saved
+
+
+def get_release(client: Margen, *, benchmark: str) -> dict:
+    """Fetch the bulk release for a benchmark: signed URLs for every shard set the
+    key can access, plus the credit cost. Does not download anything.
+
+    The bulk endpoint is newer than the generated client, so this calls it through
+    the client's configured base URL and bearer token. Raises ``RuntimeError`` on
+    an insufficient-credit (402) response, with the server's message.
+
+    ``benchmark`` is a benchmark id, e.g. ``"passport-pad-v1"`` or
+    ``"synthetic-face-v1"``. The request is identical for either; the response's
+    ``coverage`` field tells you what your key was entitled to.
+    """
+    base = client.sdk_configuration.get_server_details()[0]
+    url = f"{base}/api/v1/data/release?benchmark={urllib.parse.quote(benchmark)}"
+    req = urllib.request.Request(url, headers={"Authorization": f"Bearer {_bearer(client)}"})
+    try:
+        with urllib.request.urlopen(req, timeout=120) as resp:
+            return json.loads(resp.read())
+    except urllib.error.HTTPError as exc:
+        body = {}
+        try:
+            body = json.loads(exc.read())
+        except Exception:  # pragma: no cover - non-JSON error body
+            pass
+        raise RuntimeError(body.get("error") or f"release request failed: HTTP {exc.code}") from None
+
+
+def pull_release(client: Margen, *, benchmark: str, out_dir: Optional[str] = None):
+    """Download a whole benchmark as prebuilt parquet shards and return one pandas
+    DataFrame. This is the copy-paste bulk entry point.
+
+    - One credit per image, net of images you already own; a re-pull is free.
+    - If your access does not line up with whole shard sets (``coverage`` is
+      ``"partial"`` or ``"empty"``), there is nothing to bulk-download: this raises
+      ``RuntimeError`` telling you to use per-image :func:`download_selection`.
+    - ``out_dir`` optionally also saves the ``.parquet`` files to a folder.
+
+    Needs ``pandas`` (with a parquet engine such as ``pyarrow``).
+    """
+    try:
+        import pandas as pd  # local import: the SDK does not depend on pandas
+    except ImportError:  # pragma: no cover
+        raise RuntimeError("pull_release needs pandas: pip install 'margen[data]' or pip install pandas pyarrow") from None
+
+    release = get_release(client, benchmark=benchmark)
+    shards = release.get("shards") or []
+    if not shards:
+        raise RuntimeError(
+            f"coverage={release.get('coverage')}: your access does not cover a whole "
+            "shard set, so there is nothing to bulk-download. Use download_selection "
+            "for per-image access."
+        )
+    print(f"{release.get('credits_required')} credits, {len(shards)} sets", flush=True)
+    if out_dir:
+        os.makedirs(out_dir, exist_ok=True)
+
+    frames = []
+    for shard in shards:
+        for part in shard.get("parts", []):
+            with urllib.request.urlopen(part["url"], timeout=300) as resp:
+                blob = resp.read()
+            if out_dir:
+                with open(os.path.join(out_dir, f"{shard['set']}-{part['part']:03d}.parquet"), "wb") as fh:
+                    fh.write(blob)
+            frames.append(pd.read_parquet(io.BytesIO(blob)))
+    return pd.concat(frames, ignore_index=True)
+
+
+def _bearer(client: Margen) -> str:
+    sec = client.sdk_configuration.security
+    if callable(sec):
+        sec = sec()
+    token = getattr(sec, "bearer_auth", None) if sec is not None else None
+    if not token:
+        raise RuntimeError("no API key on the client: Margen(bearer_auth='mgn_...')")
+    return token
 
 
 # --- helpers -----------------------------------------------------------------
