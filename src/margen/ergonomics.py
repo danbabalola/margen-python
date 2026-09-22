@@ -228,7 +228,7 @@ def download_selection(
     return saved
 
 
-def get_release(client: Margen, *, benchmark: str) -> dict:
+def get_release(client: Margen, *, benchmark: str, release: Optional[str] = None, **filters) -> dict:
     """Fetch the bulk release for a benchmark: signed URLs for every shard set the
     key can access, plus the credit cost. Does not download anything.
 
@@ -237,11 +237,32 @@ def get_release(client: Margen, *, benchmark: str) -> dict:
     an insufficient-credit (402) response, with the server's message.
 
     ``benchmark`` is a benchmark id, e.g. ``"passport-pad-v1"`` or
-    ``"synthetic-face-v1"``. The request is identical for either; the response's
-    ``coverage`` field tells you what your key was entitled to.
+    ``"synthetic-face-v1"``. The response's ``coverage`` field tells you what your
+    key was entitled to.
+
+    ``release`` picks a specific version of the benchmark (e.g.
+    ``"passport-pad-v1.1"``). Omit it for the benchmark's default release. Every
+    response lists the versions that exist under ``available_releases``, so you can
+    discover them from any call.
+
+    ``filters`` narrow which shard sets are delivered: ``generator``, ``kind``,
+    ``condition``, ``skin_tone``, ``gender``, ``layer``. A list value is ORed. They
+    only ever remove sets you are entitled to, never add any, and you are charged
+    only for the sets served. Two things worth knowing:
+
+    - ``generator=...`` keeps the real (bona fide) sets alongside the generator you
+      named, so the pull can still score a detector. Add ``kind="fake"`` to get the
+      attacks alone, which is the cheap way for an existing buyer to pull ONLY a
+      newly added generator without re-downloading anything they already own.
+    - A filter that matches nothing returns ``coverage`` as normal with an empty
+      ``shards`` list and ``available_filter_values`` naming what would match.
     """
     base = client.sdk_configuration.get_server_details()[0]
-    url = f"{base}/api/v1/data/release?benchmark={urllib.parse.quote(benchmark)}"
+    params = {"benchmark": benchmark}
+    if release:
+        params["release"] = release
+    params.update(_normalize_filters(filters))
+    url = f"{base}/api/v1/data/release?{urllib.parse.urlencode(params)}"
     req = urllib.request.Request(url, headers={"Authorization": f"Bearer {_bearer(client)}"})
     try:
         with urllib.request.urlopen(req, timeout=120) as resp:
@@ -255,7 +276,14 @@ def get_release(client: Margen, *, benchmark: str) -> dict:
         raise RuntimeError(body.get("error") or f"release request failed: HTTP {exc.code}") from None
 
 
-def pull_release(client: Margen, *, benchmark: str, out_dir: Optional[str] = None):
+def pull_release(
+    client: Margen,
+    *,
+    benchmark: str,
+    release: Optional[str] = None,
+    out_dir: Optional[str] = None,
+    **filters,
+):
     """Download a whole benchmark as prebuilt parquet shards and return one pandas
     DataFrame. This is the copy-paste bulk entry point.
 
@@ -264,6 +292,12 @@ def pull_release(client: Margen, *, benchmark: str, out_dir: Optional[str] = Non
       ``"partial"`` or ``"empty"``), there is nothing to bulk-download: this raises
       ``RuntimeError`` telling you to use per-image :func:`download_selection`.
     - ``out_dir`` optionally also saves the ``.parquet`` files to a folder.
+    - ``release`` and ``filters`` are passed straight to :func:`get_release`. For
+      example, to add just the FLUX.2 arm to a passport benchmark you already own::
+
+          pull_release(client, benchmark="passport-pad-v1",
+                       release="passport-pad-v1.1",
+                       generator="flux2_klein_4b", kind="fake")
 
     Needs ``pandas`` (with a parquet engine such as ``pyarrow``).
     """
@@ -272,11 +306,16 @@ def pull_release(client: Margen, *, benchmark: str, out_dir: Optional[str] = Non
     except ImportError:  # pragma: no cover
         raise RuntimeError("pull_release needs pandas: pip install 'margen[data]' or pip install pandas pyarrow") from None
 
-    release = get_release(client, benchmark=benchmark)
-    shards = release.get("shards") or []
+    release_doc = get_release(client, benchmark=benchmark, release=release, **filters)
+    shards = release_doc.get("shards") or []
     if not shards:
+        if release_doc.get("filters"):
+            raise RuntimeError(
+                f"no shard set matches filters {release_doc['filters']}. Values present in "
+                f"this release: {release_doc.get('available_filter_values')}"
+            )
         raise RuntimeError(
-            f"coverage={release.get('coverage')}: your access does not cover a whole "
+            f"coverage={release_doc.get('coverage')}: your access does not cover a whole "
             "shard set, so there is nothing to bulk-download. Use download_selection "
             "for per-image access."
         )
